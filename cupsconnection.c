@@ -1653,9 +1653,10 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
 
       debugprintf ("Attribute: %s\n", ippGetName (attr));
       if (!strcmp (ippGetName (attr), "job-id") &&
-	  ippGetValueTag (attr) == IPP_TAG_INTEGER)
+      job_id == -1 &&
+	  ippGetValueTag (attr) == IPP_TAG_INTEGER) {
 	job_id = ippGetInteger (attr, 0);
-      else if (((!strcmp (ippGetName (attr), "job-k-octets") ||
+     } else if (((!strcmp (ippGetName (attr), "job-k-octets") ||
 		 !strcmp (ippGetName (attr), "job-priority") ||
 		 !strcmp (ippGetName (attr), "time-at-creation") ||
 		 !strcmp (ippGetName (attr), "time-at-processing") ||
@@ -1688,6 +1689,23 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
       }
 
       if (val) {
+        const char * name = ippGetName (attr);
+
+        if (strcmp (name, "job-uri") == 0) {
+          char seps[]   = "/";
+          char *val_str = ippGetString (attr, 0, NULL);
+          char *token = strtok( val_str, seps );
+          char *prev;
+
+          while( token != NULL ) {
+            prev = token;
+            token = strtok(NULL, seps);
+          }
+
+          if (prev) {
+            job_id = atoi(prev);
+          }
+        }
 	debugprintf ("Adding %s to job dict\n", ippGetName (attr));
 	PyDict_SetItemString (dict, ippGetName (attr), val);
 	Py_DECREF (val);
