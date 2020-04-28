@@ -68,8 +68,8 @@ set_ipp_error (ipp_status_t status, const char *message)
   PyObject *v = Py_BuildValue ("(is)", status, message);
 #else
   PyObject *v = Py_BuildValue ("(iu)", status,
-				       PyUnicode_AS_UNICODE (
-					    PyUnicode_FromString (message)));
+               PyUnicode_AS_UNICODE (
+              PyUnicode_FromString (message)));
 #endif
   if (v != NULL) {
     PyErr_SetObject (IPPError, v);
@@ -158,12 +158,12 @@ construct_uri (char *buffer, size_t buflen, const char *base, const char *value)
       s++;
     } else {
       if (d + 2 < buffer + buflen) {
-	*d++ = '%';
-	*d++ = "0123456789ABCDEF"[((*s) & 0xf0) >> 4];
-	*d++ = "0123456789ABCDEF"[((*s) & 0x0f)];
-	s++;
+  *d++ = '%';
+  *d++ = "0123456789ABCDEF"[((*s) & 0xf0) >> 4];
+  *d++ = "0123456789ABCDEF"[((*s) & 0x0f)];
+  s++;
       } else
-	break;
+  break;
     }
   }
 
@@ -201,7 +201,7 @@ Connection_init (Connection *self, PyObject *args, PyObject *kwds)
   static char *kwlist[] = { "host", "port", "encryption", NULL };
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "|sii", kwlist,
-				    &host, &port, &encryption))
+            &host, &port, &encryption))
     return -1;
 
   debugprintf ("-> Connection_init(host=%s)\n", host);
@@ -243,7 +243,7 @@ Connection_init (Connection *self, PyObject *args, PyObject *kwds)
     }
 
     Connections = realloc (Connections,
-			   (1 + NumConnections) * sizeof (Connection *));
+         (1 + NumConnections) * sizeof (Connection *));
     if (Connections == NULL) {
       Connections = old_array;
       PyErr_SetString (PyExc_RuntimeError, "insufficient memory");
@@ -272,25 +272,25 @@ Connection_dealloc (Connection *self)
     if (NumConnections > 1)
     {
       Connection **new_array = calloc (NumConnections - 1,
-				       sizeof (Connection *));
+               sizeof (Connection *));
 
       if (new_array)
       {
-	int k;
-	for (i = 0, k = 0; i < NumConnections; i++)
-	{
-	  if (i == j)
-	    continue;
+  int k;
+  for (i = 0, k = 0; i < NumConnections; i++)
+  {
+    if (i == j)
+      continue;
 
-	  new_array[k++] = Connections[i];
-	}
+    new_array[k++] = Connections[i];
+  }
 
-	free (Connections);
-	Connections = new_array;
-	NumConnections--;
+  free (Connections);
+  Connections = new_array;
+  NumConnections--;
       } else
-	/* Failed to allocate memory. Just clear out the reference. */
-	Connections[j] = NULL;
+  /* Failed to allocate memory. Just clear out the reference. */
+  Connections[j] = NULL;
     }
     else
     {
@@ -301,7 +301,7 @@ Connection_dealloc (Connection *self)
     }
   }
 
-  if (self->http) {  
+  if (self->http) {
     debugprintf ("httpClose()\n");
     httpClose (self->http);
     free (self->host);
@@ -318,7 +318,7 @@ Connection_repr (Connection *self)
 {
   char buffer[256];
   snprintf (buffer, 256, "<cups.Connection object for %s at %p>",
-			  self->host, self);
+        self->host, self);
 #if PY_MAJOR_VERSION >= 3
   return PyUnicode_FromString (buffer);
 #else
@@ -358,11 +358,11 @@ Connection_end_allow_threads (void *connection)
 #ifdef HAVE_CUPS_1_4
 static const char *
 password_callback (int newstyle,
-		   const char *prompt,
-		   http_t *http,
-		   const char *method,
-		   const char *resource,
-		   void *user_data)
+       const char *prompt,
+       http_t *http,
+       const char *method,
+       const char *resource,
+       void *user_data)
 {
   struct TLS *tls = get_TLS ();
   PyObject *cb_context = user_data;
@@ -372,7 +372,7 @@ password_callback (int newstyle,
   int i;
 
   debugprintf ("-> password_callback for http=%p, newstyle=%d\n",
-	       http, newstyle);
+         http, newstyle);
 
   for (i = 0; i < NumConnections; i++)
     if (Connections[i]->http == http)
@@ -393,7 +393,7 @@ password_callback (int newstyle,
     /* New-style callback. */
     if (cb_context)
       args = Py_BuildValue ("(sOssO)", prompt, self, method, resource,
-			    cb_context);
+          cb_context);
     else
       args = Py_BuildValue ("(sOss)", prompt, self, method, resource);
   } else
@@ -428,20 +428,20 @@ password_callback (int newstyle,
 
 const char *
 password_callback_oldstyle (const char *prompt,
-			    http_t *http,
-			    const char *method,
-			    const char *resource,
-			    void *user_data)
+          http_t *http,
+          const char *method,
+          const char *resource,
+          void *user_data)
 {
   return password_callback (0, prompt, http, method, resource, user_data);
 }
 
 const char *
 password_callback_newstyle (const char *prompt,
-			    http_t *http,
-			    const char *method,
-			    const char *resource,
-			    void *user_data)
+          http_t *http,
+          const char *method,
+          const char *resource,
+          void *user_data)
 {
   return password_callback (1, prompt, http, method, resource, user_data);
 }
@@ -449,7 +449,7 @@ password_callback_newstyle (const char *prompt,
 
 static PyObject *
 do_printer_request (Connection *self, PyObject *args, PyObject *kwds,
-		    ipp_op_t op)
+        ipp_op_t op)
 {
   PyObject *nameobj;
   PyObject *reasonobj = NULL;
@@ -463,8 +463,8 @@ do_printer_request (Connection *self, PyObject *args, PyObject *kwds,
     {
       static char *kwlist[] = { "name", "reason", NULL };
       if (!PyArg_ParseTupleAndKeywords (args, kwds, "O|O", kwlist,
-					&nameobj, &reasonobj))
-	return NULL;
+          &nameobj, &reasonobj))
+  return NULL;
       break;
     }
 
@@ -484,7 +484,7 @@ do_printer_request (Connection *self, PyObject *args, PyObject *kwds,
   free (name);
 
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, uri);
+    "printer-uri", NULL, uri);
 
   if (reasonobj) {
     char *reason;
@@ -495,7 +495,7 @@ do_printer_request (Connection *self, PyObject *args, PyObject *kwds,
 
     debugprintf ("reason: %s\n", reason);
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_TEXT,
-		  "printer-state-message", NULL, reason);
+      "printer-state-message", NULL, reason);
     free (reason);
   }
 
@@ -512,7 +512,7 @@ do_printer_request (Connection *self, PyObject *args, PyObject *kwds,
 
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf("<- do_printer_request (error)\n");
@@ -560,7 +560,7 @@ Connection_getDests (Connection *self)
     PyObject *largs = Py_BuildValue ("()");
     PyObject *lkwlist = Py_BuildValue ("{}");
     Dest *destobj = (Dest *) PyType_GenericNew (&cups_DestType,
-						largs, lkwlist);
+            largs, lkwlist);
     Py_DECREF (largs);
     Py_DECREF (lkwlist);
 
@@ -568,20 +568,20 @@ Connection_getDests (Connection *self)
     PyObject *nameinstance;
     if (i == num_dests)
       {
-	// Add a (None,None) entry for the default printer.
-	dest = cupsGetDest (NULL, NULL, num_dests, dests);
-	if (dest == NULL) {
-	  /* No default printer. */
-	  Py_DECREF ((PyObject *) destobj);
-	  break;
-	}
+  // Add a (None,None) entry for the default printer.
+  dest = cupsGetDest (NULL, NULL, num_dests, dests);
+  if (dest == NULL) {
+    /* No default printer. */
+    Py_DECREF ((PyObject *) destobj);
+    break;
+  }
 
-	nameinstance = Py_BuildValue ("(ss)", NULL, NULL);
+  nameinstance = Py_BuildValue ("(ss)", NULL, NULL);
       }
     else
       {
-	dest = dests + i;
-	nameinstance = Py_BuildValue ("(ss)", dest->name, dest->instance);
+  dest = dests + i;
+  nameinstance = Py_BuildValue ("(ss)", dest->name, dest->instance);
       }
 
     copy_dest (destobj, dest);
@@ -610,14 +610,14 @@ cups_dest_cb (void *user_data, unsigned flags, cups_dest_t *dest)
 
   debugprintf ("-> cups_dest_cb\n");
   destobj = (Dest *) PyType_GenericNew (&cups_DestType,
-					largs, lkwlist);
+          largs, lkwlist);
   Py_DECREF (largs);
   Py_DECREF (lkwlist);
   copy_dest (destobj, dest);
   args = Py_BuildValue ("(OiO)",
-			context->user_data,
-			flags,
-			destobj);
+      context->user_data,
+      flags,
+      destobj);
   Py_DECREF ((PyObject *) destobj);
 
   result = PyEval_CallObject (context->cb, args);
@@ -678,8 +678,8 @@ PyObject_from_attr_value (ipp_attribute_t *attr, int i)
   case IPP_TAG_RANGE:
     lower = ippGetRange (attr, i, &upper);
     val = Py_BuildValue ("(ii)",
-			 lower,
-			 upper);
+       lower,
+       upper);
     break;
   case IPP_TAG_NOVALUE:
     Py_RETURN_NONE;
@@ -692,13 +692,13 @@ PyObject_from_attr_value (ipp_attribute_t *attr, int i)
   case IPP_TAG_RESOLUTION:
     xres = ippGetResolution(attr, i, &yres, &units);
     val = Py_BuildValue ("(iii)",
-			 xres,
-			 yres,
-			 units);
+       xres,
+       yres,
+       units);
     break;
   default:
     snprintf (unknown, sizeof (unknown),
-	      "(unknown IPP value tag 0x%x)", ippGetValueTag(attr));
+        "(unknown IPP value tag 0x%x)", ippGetValueTag(attr));
     val = PyUnicode_FromString (unknown);
     break;
   }
@@ -747,9 +747,9 @@ Connection_getPrinters (Connection *self)
   debugprintf ("-> Connection_getPrinters()\n");
 
   ippAddStrings (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD,
-		 "requested-attributes",
-		 sizeof (attributes) / sizeof (attributes[0]),
-		 NULL, attributes);
+     "requested-attributes",
+     sizeof (attributes) / sizeof (attributes[0]),
+     NULL, attributes);
   debugprintf ("cupsDoRequest(\"/\")\n");
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/");
@@ -763,7 +763,7 @@ Connection_getPrinters (Connection *self)
     }
 
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_getPrinters() (error)\n");
@@ -783,72 +783,72 @@ Connection_getPrinters (Connection *self)
 
     dict = PyDict_New ();
     for (; attr && ippGetGroupTag (attr) == IPP_TAG_PRINTER;
-	 attr = ippNextAttribute (answer)) {
+   attr = ippNextAttribute (answer)) {
       PyObject *val = NULL;
 
       debugprintf ("Attribute: %s\n", ippGetName (attr));
       if (!strcmp (ippGetName (attr), "printer-name") &&
-	  ippGetValueTag (attr) == IPP_TAG_NAME)
-	printer = (char *) ippGetString (attr, 0, NULL);
+    ippGetValueTag (attr) == IPP_TAG_NAME)
+  printer = (char *) ippGetString (attr, 0, NULL);
       else if ((!strcmp (ippGetName (attr), "printer-type") ||
-		!strcmp (ippGetName (attr), "printer-state")) &&
-	       ippGetValueTag (attr) == IPP_TAG_ENUM) {
-	int ptype = ippGetInteger (attr, 0);
+    !strcmp (ippGetName (attr), "printer-state")) &&
+         ippGetValueTag (attr) == IPP_TAG_ENUM) {
+  int ptype = ippGetInteger (attr, 0);
 #if PY_MAJOR_VERSION >= 3
-	val = PyLong_FromLong (ptype);
+  val = PyLong_FromLong (ptype);
 #else
-	val = PyInt_FromLong (ptype);
+  val = PyInt_FromLong (ptype);
 #endif
       }
       else if ((!strcmp (ippGetName (attr),
-			 "printer-make-and-model") ||
-		!strcmp (ippGetName (attr), "printer-info") ||
-		!strcmp (ippGetName (attr), "printer-location") ||
-		!strcmp (ippGetName (attr), "printer-state-message")) &&
-	       ippGetValueTag (attr) == IPP_TAG_TEXT) {
-	val = PyObj_from_UTF8 (ippGetString (attr, 0, NULL));
+       "printer-make-and-model") ||
+    !strcmp (ippGetName (attr), "printer-info") ||
+    !strcmp (ippGetName (attr), "printer-location") ||
+    !strcmp (ippGetName (attr), "printer-state-message")) &&
+         ippGetValueTag (attr) == IPP_TAG_TEXT) {
+  val = PyObj_from_UTF8 (ippGetString (attr, 0, NULL));
       }
       else if (!strcmp (ippGetName (attr),
-			"printer-state-reasons") &&
-	       ippGetValueTag (attr) == IPP_TAG_KEYWORD) {
-	val = PyList_from_attr_values (attr);
+      "printer-state-reasons") &&
+         ippGetValueTag (attr) == IPP_TAG_KEYWORD) {
+  val = PyList_from_attr_values (attr);
       }
       else if (!strcmp (ippGetName (attr),
-			"printer-is-accepting-jobs") &&
-	       ippGetValueTag (attr) == IPP_TAG_BOOLEAN) {
-	int b = ippGetBoolean (attr, 0);
+      "printer-is-accepting-jobs") &&
+         ippGetValueTag (attr) == IPP_TAG_BOOLEAN) {
+  int b = ippGetBoolean (attr, 0);
 #if PY_MAJOR_VERSION >= 3
-	val = PyLong_FromLong (b);
+  val = PyLong_FromLong (b);
 #else
-	val = PyInt_FromLong (b);
+  val = PyInt_FromLong (b);
 #endif
       }
       else if ((!strcmp (ippGetName (attr),
-			 "printer-up-time") ||
-		!strcmp (ippGetName (attr),
-			 "queued-job-count")) &&
-	       ippGetValueTag (attr) == IPP_TAG_INTEGER) {
-	int u = ippGetInteger (attr, 0);
+       "printer-up-time") ||
+    !strcmp (ippGetName (attr),
+       "queued-job-count")) &&
+         ippGetValueTag (attr) == IPP_TAG_INTEGER) {
+  int u = ippGetInteger (attr, 0);
 #if PY_MAJOR_VERSION >= 3
-	val = PyLong_FromLong (u);
+  val = PyLong_FromLong (u);
 #else
-	val = PyInt_FromLong (u);
+  val = PyInt_FromLong (u);
 #endif
       }
       else if ((!strcmp (ippGetName (attr), "device-uri") ||
-		!strcmp (ippGetName (attr), "printer-uri-supported")) &&
-	       ippGetValueTag (attr) == IPP_TAG_URI) {
-	val = PyObj_from_UTF8 (ippGetString (attr, 0, NULL));
+    !strcmp (ippGetName (attr), "printer-uri-supported")) &&
+         ippGetValueTag (attr) == IPP_TAG_URI) {
+  val = PyObj_from_UTF8 (ippGetString (attr, 0, NULL));
       }
       else if (!strcmp (ippGetName (attr), "printer-is-shared") &&
-	       ippGetValueTag (attr) == IPP_TAG_BOOLEAN) {
-	val = PyBool_FromLong (ippGetBoolean (attr, 0));
+         ippGetValueTag (attr) == IPP_TAG_BOOLEAN) {
+  val = PyBool_FromLong (ippGetBoolean (attr, 0));
       }
 
       if (val) {
-	debugprintf ("Added %s to dict\n", ippGetName (attr));
-	PyDict_SetItemString (dict, ippGetName (attr), val);
-	Py_DECREF (val);
+  debugprintf ("Added %s to dict\n", ippGetName (attr));
+  PyDict_SetItemString (dict, ippGetName (attr), val);
+  Py_DECREF (val);
       }
     }
 
@@ -881,9 +881,9 @@ Connection_getClasses (Connection *self)
 
   debugprintf ("-> Connection_getClasses()\n");
   ippAddStrings (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD,
-		 "requested-attributes",
-		 sizeof (attributes) / sizeof (attributes[0]),
-		 NULL, attributes);
+     "requested-attributes",
+     sizeof (attributes) / sizeof (attributes[0]),
+     NULL, attributes);
   debugprintf ("cupsDoRequest(\"/\")\n");
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/");
@@ -897,7 +897,7 @@ Connection_getClasses (Connection *self)
     }
 
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_getClasses() (error)\n");
@@ -917,18 +917,18 @@ Connection_getClasses (Connection *self)
       break;
 
      for (; attr && ippGetGroupTag (attr) == IPP_TAG_PRINTER;
-	 attr = ippNextAttribute (answer)) {
+   attr = ippNextAttribute (answer)) {
       debugprintf ("Attribute: %s\n", ippGetName (attr));
       if (!strcmp (ippGetName (attr), "printer-name") &&
-	  ippGetValueTag (attr) == IPP_TAG_NAME)
-	classname = (char *) ippGetString (attr, 0, NULL);
+    ippGetValueTag (attr) == IPP_TAG_NAME)
+  classname = (char *) ippGetString (attr, 0, NULL);
       else if (!strcmp (ippGetName (attr), "printer-uri-supported") &&
-	       ippGetValueTag (attr) == IPP_TAG_URI)
-	printer_uri = (char *) ippGetString (attr, 0, NULL);
+         ippGetValueTag (attr) == IPP_TAG_URI)
+  printer_uri = (char *) ippGetString (attr, 0, NULL);
       else if (!strcmp (ippGetName (attr), "member-names") &&
-	       ippGetValueTag (attr) == IPP_TAG_NAME) {
-	Py_XDECREF (members);
-	members = PyList_from_attr_values (attr);
+         ippGetValueTag (attr) == IPP_TAG_NAME) {
+  Py_XDECREF (members);
+  members = PyList_from_attr_values (attr);
       }
     }
 
@@ -964,84 +964,84 @@ do_getPPDs (Connection *self, PyObject *args, PyObject *kwds, int all_lists)
   ipp_t *request, *answer;
   ipp_attribute_t *attr;
   int limit = 0;
-  PyObject *exclude_schemes_obj = NULL;	/* string list */
-  PyObject *include_schemes_obj = NULL;	/* string list */
+  PyObject *exclude_schemes_obj = NULL;  /* string list */
+  PyObject *include_schemes_obj = NULL;  /* string list */
   char *ppd_natural_language = NULL;
-  PyObject *ppd_device_id_obj = NULL;	/* UTF-8 string */
+  PyObject *ppd_device_id_obj = NULL;  /* UTF-8 string */
   char *ppd_device_id;
-  PyObject *ppd_make_obj = NULL;	/* UTF-8 string */
+  PyObject *ppd_make_obj = NULL;  /* UTF-8 string */
   char *ppd_make;
   PyObject *ppd_make_and_model_obj = NULL; /* UTF-8 string */
   char *ppd_make_and_model;
   int ppd_model_number = -1;
-  PyObject *ppd_product_obj = NULL;	/* UTF-8 string */
+  PyObject *ppd_product_obj = NULL;  /* UTF-8 string */
   char *ppd_product;
-  PyObject *ppd_psversion_obj = NULL;	/* UTF-8 string */
+  PyObject *ppd_psversion_obj = NULL;  /* UTF-8 string */
   char *ppd_psversion;
   char *ppd_type = NULL;
   static char *kwlist[] = { "limit",
-			    "exclude_schemes",
-			    "include_schemes",
-			    "ppd_natural_language",
-			    "ppd_device_id",
-			    "ppd_make",
-			    "ppd_make_and_model",
-			    "ppd_model_number",
-			    "ppd_product",
-			    "ppd_psversion",
-			    "ppd_type",
-			    NULL };
+          "exclude_schemes",
+          "include_schemes",
+          "ppd_natural_language",
+          "ppd_device_id",
+          "ppd_make",
+          "ppd_make_and_model",
+          "ppd_model_number",
+          "ppd_product",
+          "ppd_psversion",
+          "ppd_type",
+          NULL };
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "|iOOsOOOiOOs", kwlist,
-				    &limit,
-				    &exclude_schemes_obj, &include_schemes_obj,
-				    &ppd_natural_language,
-				    &ppd_device_id_obj, &ppd_make_obj,
-				    &ppd_make_and_model_obj,
-				    &ppd_model_number,
-				    &ppd_product_obj, &ppd_psversion_obj,
-				    &ppd_type))
+            &limit,
+            &exclude_schemes_obj, &include_schemes_obj,
+            &ppd_natural_language,
+            &ppd_device_id_obj, &ppd_make_obj,
+            &ppd_make_and_model_obj,
+            &ppd_model_number,
+            &ppd_product_obj, &ppd_psversion_obj,
+            &ppd_type))
     return NULL;
 
   request = ippNewRequest(CUPS_GET_PPDS);
   if (limit > 0)
     ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-		   "limit", limit);
+       "limit", limit);
 
   if (exclude_schemes_obj)
     {
       size_t i, n;
       char **ss;
       if (!PyList_Check (exclude_schemes_obj))
-	{
-	  PyErr_SetString (PyExc_TypeError, "List required (exclude_schemes)");
-	  ippDelete (request);
-	  return NULL;
-	}
+  {
+    PyErr_SetString (PyExc_TypeError, "List required (exclude_schemes)");
+    ippDelete (request);
+    return NULL;
+  }
 
       n = PyList_Size (exclude_schemes_obj);
       ss = calloc (n + 1, sizeof (char *));
       for (i = 0; i < n; i++)
-	{
-	  PyObject *val = PyList_GetItem (exclude_schemes_obj, i); // borrowed
-	  if (!PyUnicode_Check (val) && !PyBytes_Check (val))
-	    {
-	      PyErr_SetString (PyExc_TypeError,
-			       "String list required (exclude_schemes)");
-	      ippDelete (request);
-	      while (i > 0)
-		free (ss[--i]);
-	      free (ss);
-	      return NULL;
-	    }
+  {
+    PyObject *val = PyList_GetItem (exclude_schemes_obj, i); // borrowed
+    if (!PyUnicode_Check (val) && !PyBytes_Check (val))
+      {
+        PyErr_SetString (PyExc_TypeError,
+             "String list required (exclude_schemes)");
+        ippDelete (request);
+        while (i > 0)
+    free (ss[--i]);
+        free (ss);
+        return NULL;
+      }
 
-	  UTF8_from_PyObj (&ss[i], val);
-	}
+    UTF8_from_PyObj (&ss[i], val);
+  }
       ss[n] = NULL;
       ippAddStrings (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		     "exclude-schemes", n, NULL, (const char **) ss);
+         "exclude-schemes", n, NULL, (const char **) ss);
       for (i = 0; i < n; i++)
-	free (ss[i]);
+  free (ss[i]);
       free (ss);
     }
 
@@ -1050,114 +1050,114 @@ do_getPPDs (Connection *self, PyObject *args, PyObject *kwds, int all_lists)
       size_t i, n;
       char **ss;
       if (!PyList_Check (include_schemes_obj))
-	{
-	  PyErr_SetString (PyExc_TypeError, "List required (include_schemes)");
-	  ippDelete (request);
-	  return NULL;
-	}
+  {
+    PyErr_SetString (PyExc_TypeError, "List required (include_schemes)");
+    ippDelete (request);
+    return NULL;
+  }
 
       n = PyList_Size (include_schemes_obj);
       ss = calloc (n + 1, sizeof (char *));
       for (i = 0; i < n; i++)
-	{
-	  PyObject *val = PyList_GetItem (include_schemes_obj, i); // borrowed
-	  if (!PyUnicode_Check (val) && !PyBytes_Check (val))
-	    {
-	      PyErr_SetString (PyExc_TypeError,
-			       "String list required (include_schemes)");
-	      ippDelete (request);
-	      while (i > 0)
-		free (ss[--i]);
-	      free (ss);
-	      return NULL;
-	    }
+  {
+    PyObject *val = PyList_GetItem (include_schemes_obj, i); // borrowed
+    if (!PyUnicode_Check (val) && !PyBytes_Check (val))
+      {
+        PyErr_SetString (PyExc_TypeError,
+             "String list required (include_schemes)");
+        ippDelete (request);
+        while (i > 0)
+    free (ss[--i]);
+        free (ss);
+        return NULL;
+      }
 
-	  UTF8_from_PyObj (&ss[i], val);
-	}
+    UTF8_from_PyObj (&ss[i], val);
+  }
       ss[n] = NULL;
       ippAddStrings (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		     "include-schemes", n, NULL, (const char **) ss);
+         "include-schemes", n, NULL, (const char **) ss);
       for (i = 0; i < n; i++)
-	free (ss[i]);
+  free (ss[i]);
       free (ss);
     }
 
   if (ppd_device_id_obj)
     {
       if (UTF8_from_PyObj (&ppd_device_id, ppd_device_id_obj) == NULL)
-	{
-	  ippDelete (request);
-	  return NULL;
-	}
+  {
+    ippDelete (request);
+    return NULL;
+  }
 
       ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_TEXT,
-		    "ppd-device-id", NULL, ppd_device_id);
+        "ppd-device-id", NULL, ppd_device_id);
       free (ppd_device_id);
     }
 
   if (ppd_make_obj)
     {
       if (UTF8_from_PyObj (&ppd_make, ppd_make_obj) == NULL)
-	{
-	  ippDelete (request);
-	  return NULL;
-	}
+  {
+    ippDelete (request);
+    return NULL;
+  }
 
       ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_TEXT,
-		    "ppd-make", NULL, ppd_make);
+        "ppd-make", NULL, ppd_make);
       free (ppd_make);
     }
 
   if (ppd_make_and_model_obj)
     {
       if (UTF8_from_PyObj (&ppd_make_and_model, ppd_make_and_model_obj) == NULL)
-	{
-	  ippDelete (request);
-	  return NULL;
-	}
+  {
+    ippDelete (request);
+    return NULL;
+  }
 
       ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_TEXT,
-		    "ppd-make-and-model", NULL, ppd_make_and_model);
+        "ppd-make-and-model", NULL, ppd_make_and_model);
       free (ppd_make_and_model);
     }
 
   if (ppd_model_number >= 0)
     ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-		   "ppd-model-number", ppd_model_number);
+       "ppd-model-number", ppd_model_number);
 
   if (ppd_product_obj)
     {
       if (UTF8_from_PyObj (&ppd_product, ppd_product_obj) == NULL)
-	{
-	  ippDelete (request);
-	  return NULL;
-	}
+  {
+    ippDelete (request);
+    return NULL;
+  }
 
       ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_TEXT,
-		    "ppd-product", NULL, ppd_product);
+        "ppd-product", NULL, ppd_product);
       free (ppd_product);
     }
 
   if (ppd_psversion_obj)
     {
       if (UTF8_from_PyObj (&ppd_psversion, ppd_psversion_obj) == NULL)
-	{
-	  ippDelete (request);
-	  return NULL;
-	}
+  {
+    ippDelete (request);
+    return NULL;
+  }
 
       ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_TEXT,
-		    "ppd-psversion", NULL, ppd_psversion);
+        "ppd-psversion", NULL, ppd_psversion);
       free (ppd_psversion);
     }
 
   if (ppd_natural_language)
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_LANGUAGE,
-		  "ppd-natural-language", NULL, ppd_natural_language);
+      "ppd-natural-language", NULL, ppd_natural_language);
 
   if (ppd_type)
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD,
-		  "ppd-type", NULL, ppd_type);
+      "ppd-type", NULL, ppd_type);
 
   debugprintf ("-> Connection_getPPDs()\n");
   debugprintf ("cupsDoRequest(\"/\")\n");
@@ -1166,7 +1166,7 @@ do_getPPDs (Connection *self, PyObject *args, PyObject *kwds, int all_lists)
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_getPPDs() (error)\n");
@@ -1186,23 +1186,23 @@ do_getPPDs (Connection *self, PyObject *args, PyObject *kwds, int all_lists)
 
     dict = PyDict_New ();
     for (; attr && ippGetGroupTag (attr) == IPP_TAG_PRINTER;
-	 attr = ippNextAttribute (answer)) {
+   attr = ippNextAttribute (answer)) {
       PyObject *val = NULL;
       debugprintf ("Attribute: %s\n", ippGetName (attr));
       if (!strcmp (ippGetName (attr), "ppd-name") &&
-	  ippGetValueTag (attr) == IPP_TAG_NAME)
-	ppdname = (char *) ippGetString (attr, 0, NULL);
+    ippGetValueTag (attr) == IPP_TAG_NAME)
+  ppdname = (char *) ippGetString (attr, 0, NULL);
       else {
-	if (all_lists)
-	  val = PyList_from_attr_values (attr);
-	else
-	  val = PyObject_from_attr_value (attr, 0);
+  if (all_lists)
+    val = PyList_from_attr_values (attr);
+  else
+    val = PyObject_from_attr_value (attr, 0);
 
-	if (val) {
-	  debugprintf ("Adding %s to ppd dict\n", ippGetName (attr));
-	  PyDict_SetItemString (dict, ippGetName (attr), val);
-	  Py_DECREF (val);
-	}
+  if (val) {
+    debugprintf ("Adding %s to ppd dict\n", ippGetName (attr));
+    PyDict_SetItemString (dict, ippGetName (attr), val);
+    Py_DECREF (val);
+  }
       }
     }
 
@@ -1252,11 +1252,11 @@ Connection_getServerPPD (Connection *self, PyObject *args)
     return NULL;
   }
   debugprintf ("<- Connection_getServerPPD(\"%s\") = \"%s\"\n",
-	       ppd_name, filename);
+         ppd_name, filename);
   return PyUnicode_FromString (filename);
 #else /* earlier than CUPS 1.3 */
   PyErr_SetString (PyExc_RuntimeError,
-		   "Operation not supported - recompile against CUPS 1.3 or later");
+       "Operation not supported - recompile against CUPS 1.3 or later");
   return NULL;
 #endif /* CUPS 1.3 */
 }
@@ -1286,12 +1286,12 @@ Connection_getDocument (Connection *self, PyObject *args)
   debugprintf ("-> Connection_getDocument(\"%s\",%d)\n", uri, jobid);
   request = ippNewRequest (CUPS_GET_DOCUMENT);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, uri);
+    "printer-uri", NULL, uri);
   free (uri);
   ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-		 "job-id", jobid);
+     "job-id", jobid);
   ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-		 "document-number", docnum);
+     "document-number", docnum);
 
   snprintf(docfilename, sizeof (docfilename), "%s/jobdoc-XXXXXX", _PATH_TMP);
   fd = mkstemp (docfilename);
@@ -1309,7 +1309,7 @@ Connection_getDocument (Connection *self, PyObject *args)
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     unlink (docfilename);
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_getDocument() (error)\n");
@@ -1317,11 +1317,11 @@ Connection_getDocument (Connection *self, PyObject *args)
   }
 
   if ((attr = ippFindAttribute (answer, "document-format",
-				IPP_TAG_MIMETYPE)) != NULL)
+        IPP_TAG_MIMETYPE)) != NULL)
     format = ippGetString (attr, 0, NULL);
 
   if ((attr = ippFindAttribute (answer, "document-name",
-				IPP_TAG_NAME)) != NULL)
+        IPP_TAG_NAME)) != NULL)
     name = ippGetString (attr, 0, NULL);
 
   dict = PyDict_New ();
@@ -1343,14 +1343,14 @@ Connection_getDocument (Connection *self, PyObject *args)
   }
 
   debugprintf ("<- Connection_getDocument() = {'file':\"%s\","
-	       "'document-format':\"%s\",'document-name':\"%s\"}\n",
-	       docfilename, format ? format : "(nul)",
-	       name ? name : "(nul)");
+         "'document-format':\"%s\",'document-name':\"%s\"}\n",
+         docfilename, format ? format : "(nul)",
+         name ? name : "(nul)");
   ippDelete (answer);
   return dict;
 #else /* earlier than CUPS 1.4 */
   PyErr_SetString (PyExc_RuntimeError,
-		   "Operation not supported - recompile against CUPS 1.4 or later");
+       "Operation not supported - recompile against CUPS 1.4 or later");
   return NULL;
 #endif /* CUPS 1.4 */
 }
@@ -1366,56 +1366,56 @@ Connection_getDevices (Connection *self, PyObject *args, PyObject *kwds)
   PyObject *exclude_schemes = NULL;
   PyObject *include_schemes = NULL;
   static char *kwlist[] = { "limit",
-			    "exclude_schemes",
-			    "include_schemes",
-			    "timeout",
-			    NULL };
+          "exclude_schemes",
+          "include_schemes",
+          "timeout",
+          NULL };
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "|iOOi", kwlist, &limit,
-				    &exclude_schemes, &include_schemes,
-				    &timeout))
+            &exclude_schemes, &include_schemes,
+            &timeout))
     return NULL;
 
   request = ippNewRequest(CUPS_GET_DEVICES);
   if (limit > 0)
     ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-		   "limit", limit);
+       "limit", limit);
 
   if (exclude_schemes)
     {
       size_t i, n;
       char **ss;
       if (!PyList_Check (exclude_schemes))
-	{
-	  PyErr_SetString (PyExc_TypeError, "List required (exclude_schemes)");
-	  ippDelete (request);
-	  return NULL;
-	}
+  {
+    PyErr_SetString (PyExc_TypeError, "List required (exclude_schemes)");
+    ippDelete (request);
+    return NULL;
+  }
 
       n = PyList_Size (exclude_schemes);
       ss = calloc (n + 1, sizeof (char *));
       for (i = 0; i < n; i++)
-	{
-	  PyObject *val = PyList_GetItem (exclude_schemes, i); // borrowed ref
-	  if (!PyUnicode_Check (val) && !PyBytes_Check (val))
-	    {
-	      PyErr_SetString (PyExc_TypeError,
-			       "String list required (exclude_schemes)");
-	      ippDelete (request);
-	      while (i > 0)
-		free (ss[--i]);
-	      free (ss);
-	      return NULL;
-	    }
+  {
+    PyObject *val = PyList_GetItem (exclude_schemes, i); // borrowed ref
+    if (!PyUnicode_Check (val) && !PyBytes_Check (val))
+      {
+        PyErr_SetString (PyExc_TypeError,
+             "String list required (exclude_schemes)");
+        ippDelete (request);
+        while (i > 0)
+    free (ss[--i]);
+        free (ss);
+        return NULL;
+      }
 
-	  UTF8_from_PyObj (&ss[i], val);
-	}
+    UTF8_from_PyObj (&ss[i], val);
+  }
 
       ss[n] = NULL;
       ippAddStrings (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		     "exclude-schemes", n, NULL, (const char **) ss);
+         "exclude-schemes", n, NULL, (const char **) ss);
       for (i = 0; i < n; i++)
-	free (ss[i]);
+  free (ss[i]);
       free (ss);
     }
 
@@ -1424,42 +1424,42 @@ Connection_getDevices (Connection *self, PyObject *args, PyObject *kwds)
       size_t i, n;
       char **ss;
       if (!PyList_Check (include_schemes))
-	{
-	  PyErr_SetString (PyExc_TypeError, "List required (include_schemes)");
-	  ippDelete (request);
-	  return NULL;
-	}
+  {
+    PyErr_SetString (PyExc_TypeError, "List required (include_schemes)");
+    ippDelete (request);
+    return NULL;
+  }
 
       n = PyList_Size (include_schemes);
       ss = calloc (n + 1, sizeof (char *));
       for (i = 0; i < n; i++)
-	{
-	  PyObject *val = PyList_GetItem (include_schemes, i); // borrowed ref
-	  if (!PyUnicode_Check (val) && !PyBytes_Check (val))
-	    {
-	      PyErr_SetString (PyExc_TypeError,
-			       "String list required (include_schemes)");
-	      ippDelete (request);
-	      while (i > 0)
-		free (ss[--i]);
-	      free (ss);
-	      return NULL;
-	    }
+  {
+    PyObject *val = PyList_GetItem (include_schemes, i); // borrowed ref
+    if (!PyUnicode_Check (val) && !PyBytes_Check (val))
+      {
+        PyErr_SetString (PyExc_TypeError,
+             "String list required (include_schemes)");
+        ippDelete (request);
+        while (i > 0)
+    free (ss[--i]);
+        free (ss);
+        return NULL;
+      }
 
-	  UTF8_from_PyObj (&ss[i], val);
-	}
+    UTF8_from_PyObj (&ss[i], val);
+  }
 
       ss[n] = NULL;
       ippAddStrings (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		     "include-schemes", n, NULL, (const char **) ss);
+         "include-schemes", n, NULL, (const char **) ss);
       for (i = 0; i < n; i++)
-	free (ss[i]);
+  free (ss[i]);
       free (ss);
     }
 
   if (timeout > 0)
     ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-		   "timeout", timeout);
+       "timeout", timeout);
 
   debugprintf ("-> Connection_getDevices()\n");
   debugprintf ("cupsDoRequest(\"/\")\n");
@@ -1468,7 +1468,7 @@ Connection_getDevices (Connection *self, PyObject *args, PyObject *kwds)
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_getDevices() (error)\n");
@@ -1488,20 +1488,20 @@ Connection_getDevices (Connection *self, PyObject *args, PyObject *kwds)
 
     dict = PyDict_New ();
     for (; attr && ippGetGroupTag (attr) == IPP_TAG_PRINTER;
-	 attr = ippNextAttribute (answer)) {
+   attr = ippNextAttribute (answer)) {
       PyObject *val = NULL;
 
       debugprintf ("Attribute: %s\n", ippGetName (attr));
       if (!strcmp (ippGetName (attr), "device-uri") &&
-	  ippGetValueTag (attr) == IPP_TAG_URI)
-	device_uri = (char *) ippGetString (attr, 0, NULL);
+    ippGetValueTag (attr) == IPP_TAG_URI)
+  device_uri = (char *) ippGetString (attr, 0, NULL);
       else
-	val = PyObject_from_attr_value (attr, 0);
+  val = PyObject_from_attr_value (attr, 0);
 
       if (val) {
-	debugprintf ("Adding %s to device dict\n", ippGetName (attr));
-	PyDict_SetItemString (dict, ippGetName (attr), val);
-	Py_DECREF (val);
+  debugprintf ("Adding %s to device dict\n", ippGetName (attr));
+  PyDict_SetItemString (dict, ippGetName (attr), val);
+  Py_DECREF (val);
       }
     }
 
@@ -1541,7 +1541,7 @@ get_requested_attrs (PyObject *requested_attrs, size_t *n_attrs, char ***attrs)
     if (!PyUnicode_Check (val) && !PyBytes_Check (val)) {
       PyErr_SetString (PyExc_TypeError, "String required");
       while (--i >= 0)
-	free (as[i]);
+  free (as[i]);
       free (as);
       return -1;
     }
@@ -1581,34 +1581,34 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
   PyObject *requested_attrs = NULL;
   char **attrs = NULL; /* initialised to calm compiler */
   size_t n_attrs = 0; /* initialised to calm compiler */
-  static char *kwlist[] = { "which_jobs", "my_jobs", "limit", "first_job_id", 
-			    "requested_attributes", NULL };
+  static char *kwlist[] = { "which_jobs", "my_jobs", "limit", "first_job_id",
+          "requested_attributes", NULL };
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "|siiiO", kwlist,
-				    &which, &my_jobs, &limit, &first_job_id,
-				    &requested_attrs))
+            &which, &my_jobs, &limit, &first_job_id,
+            &requested_attrs))
     return NULL;
 
   debugprintf ("-> Connection_getJobs(%s,%d)\n",
-	       which ? which : "(null)", my_jobs);
+         which ? which : "(null)", my_jobs);
   request = ippNewRequest(IPP_GET_JOBS);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "printer-uri",
-		NULL, "ipp://localhost/printers/");
+    NULL, "ipp://localhost/printers/");
 
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD, "which-jobs",
-		NULL, which ? which : "not-completed");
+    NULL, which ? which : "not-completed");
 
   ippAddBoolean (request, IPP_TAG_OPERATION, "my-jobs", my_jobs);
   if (my_jobs)
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		  "requesting-user-name", NULL, cupsUser());
+      "requesting-user-name", NULL, cupsUser());
 
   if (limit > 0)
     ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-		   "limit", limit);
+       "limit", limit);
 
   if (first_job_id > 0)
     ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-		   "first-job-id", first_job_id);
+       "first-job-id", first_job_id);
 
   if (requested_attrs) {
     if (get_requested_attrs (requested_attrs, &n_attrs, &attrs) == -1) {
@@ -1617,8 +1617,8 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
     }
 
     ippAddStrings (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD,
-		   "requested-attributes", n_attrs, NULL,
-		   (const char **) attrs);
+       "requested-attributes", n_attrs, NULL,
+       (const char **) attrs);
     free_requested_attrs (n_attrs, attrs);
   }
 
@@ -1628,7 +1628,7 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_getJobs() (error)\n");
@@ -1648,44 +1648,44 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
 
     dict = PyDict_New ();
     for (; attr && ippGetGroupTag (attr) == IPP_TAG_JOB;
-	 attr = ippNextAttribute (answer)) {
+   attr = ippNextAttribute (answer)) {
       PyObject *val = NULL;
 
       debugprintf ("Attribute: %s\n", ippGetName (attr));
       if (!strcmp (ippGetName (attr), "job-id") &&
       job_id == -1 &&
-	  ippGetValueTag (attr) == IPP_TAG_INTEGER) {
-	job_id = ippGetInteger (attr, 0);
+    ippGetValueTag (attr) == IPP_TAG_INTEGER) {
+  job_id = ippGetInteger (attr, 0);
      } else if (((!strcmp (ippGetName (attr), "job-k-octets") ||
-		 !strcmp (ippGetName (attr), "job-priority") ||
-		 !strcmp (ippGetName (attr), "time-at-creation") ||
-		 !strcmp (ippGetName (attr), "time-at-processing") ||
-		 !strcmp (ippGetName (attr), "time-at-completed") ||
-		 !strcmp (ippGetName (attr), "job-media-sheets") ||
-		 !strcmp (ippGetName (attr), "job-media-sheets-completed")) &&
-		ippGetValueTag (attr) == IPP_TAG_INTEGER) ||
-	       (!strcmp (ippGetName (attr), "job-state") &&
-		ippGetValueTag (attr) == IPP_TAG_ENUM))
+     !strcmp (ippGetName (attr), "job-priority") ||
+     !strcmp (ippGetName (attr), "time-at-creation") ||
+     !strcmp (ippGetName (attr), "time-at-processing") ||
+     !strcmp (ippGetName (attr), "time-at-completed") ||
+     !strcmp (ippGetName (attr), "job-media-sheets") ||
+     !strcmp (ippGetName (attr), "job-media-sheets-completed")) &&
+    ippGetValueTag (attr) == IPP_TAG_INTEGER) ||
+         (!strcmp (ippGetName (attr), "job-state") &&
+    ippGetValueTag (attr) == IPP_TAG_ENUM))
 #if PY_MAJOR_VERSION >= 3
-	val = PyLong_FromLong (ippGetInteger (attr, 0));
+  val = PyLong_FromLong (ippGetInteger (attr, 0));
 #else
-	val = PyInt_FromLong (ippGetInteger (attr, 0));
+  val = PyInt_FromLong (ippGetInteger (attr, 0));
 #endif
       else if ((!strcmp (ippGetName (attr), "job-name") &&
-		ippGetValueTag (attr) == IPP_TAG_NAME) ||
-	       (!strcmp (ippGetName (attr), "job-originating-user-name") &&
-		ippGetValueTag (attr) == IPP_TAG_NAME) ||
-	       (!strcmp (ippGetName (attr), "job-printer-uri") &&
-		ippGetValueTag (attr) == IPP_TAG_URI))
-	val = PyObj_from_UTF8 (ippGetString (attr, 0, NULL));
+    ippGetValueTag (attr) == IPP_TAG_NAME) ||
+         (!strcmp (ippGetName (attr), "job-originating-user-name") &&
+    ippGetValueTag (attr) == IPP_TAG_NAME) ||
+         (!strcmp (ippGetName (attr), "job-printer-uri") &&
+    ippGetValueTag (attr) == IPP_TAG_URI))
+  val = PyObj_from_UTF8 (ippGetString (attr, 0, NULL));
       else if (!strcmp (ippGetName (attr), "job-preserved") &&
-	       ippGetValueTag (attr) == IPP_TAG_BOOLEAN)
-	val = PyBool_FromLong (ippGetInteger (attr, 0));
+         ippGetValueTag (attr) == IPP_TAG_BOOLEAN)
+  val = PyBool_FromLong (ippGetInteger (attr, 0));
       else {
-	if (ippGetCount (attr) > 1)
-	  val = PyList_from_attr_values (attr);
-	else
-	  val = PyObject_from_attr_value (attr, 0);
+  if (ippGetCount (attr) > 1)
+    val = PyList_from_attr_values (attr);
+  else
+    val = PyObject_from_attr_value (attr, 0);
       }
 
       if (val) {
@@ -1706,9 +1706,9 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
             job_id = atoi(prev);
           }
         }
-	debugprintf ("Adding %s to job dict\n", ippGetName (attr));
-	PyDict_SetItemString (dict, ippGetName (attr), val);
-	Py_DECREF (val);
+  debugprintf ("Adding %s to job dict\n", ippGetName (attr));
+  PyDict_SetItemString (dict, ippGetName (attr), val);
+  Py_DECREF (val);
       }
     }
 
@@ -1747,7 +1747,7 @@ Connection_getJobAttributes (Connection *self, PyObject *args, PyObject *kwds)
   char uri[1024];
   static char *kwlist[] = { "job_id", "requested_attributes", NULL };
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "i|O", kwlist,
-				    &job_id, &requested_attrs))
+            &job_id, &requested_attrs))
     return NULL;
 
   if (requested_attrs) {
@@ -1759,11 +1759,11 @@ Connection_getJobAttributes (Connection *self, PyObject *args, PyObject *kwds)
   request = ippNewRequest(IPP_GET_JOB_ATTRIBUTES);
   snprintf (uri, sizeof (uri), "ipp://localhost/jobs/%d", job_id);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "job-uri",
-		NULL, uri);
+    NULL, uri);
   if (requested_attrs)
     ippAddStrings (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD,
-		   "requested-attributes", n_attrs, NULL,
-		   (const char **) attrs);
+       "requested-attributes", n_attrs, NULL,
+       (const char **) attrs);
 
   debugprintf ("cupsDoRequest(\"/\")\n");
   Connection_begin_allow_threads (self);
@@ -1773,7 +1773,7 @@ Connection_getJobAttributes (Connection *self, PyObject *args, PyObject *kwds)
     free_requested_attrs (n_attrs, attrs);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_getJobAttributes() (error)\n");
@@ -1786,7 +1786,7 @@ Connection_getJobAttributes (Connection *self, PyObject *args, PyObject *kwds)
 
     debugprintf ("Attr: %s\n", ippGetName (attr));
     if (ippGetCount (attr) > 1 ||
-	!strcmp (ippGetName (attr), "job-printer-state-reasons"))
+  !strcmp (ippGetName (attr), "job-printer-state-reasons"))
       obj = PyList_from_attr_values (attr);
     else
       obj = PyObject_from_attr_value (attr, 0);
@@ -1813,7 +1813,7 @@ Connection_cancelJob (Connection *self, PyObject *args, PyObject *kwds)
   char uri[1024];
   static char *kwlist[] = { "job_id", "purge_job", NULL };
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "i|i", kwlist,
-				    &job_id, &purge_job))
+            &job_id, &purge_job))
     return NULL;
 
   debugprintf ("-> Connection_cancelJob(%d)\n", job_id);
@@ -1821,7 +1821,7 @@ Connection_cancelJob (Connection *self, PyObject *args, PyObject *kwds)
   snprintf (uri, sizeof (uri), "ipp://localhost/jobs/%d", job_id);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "job-uri", NULL, uri);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		"requesting-user-name", NULL, cupsUser ());
+    "requesting-user-name", NULL, cupsUser ());
   if (purge_job)
     ippAddBoolean(request, IPP_TAG_OPERATION, "purge-job", 1);
   debugprintf ("cupsDoRequest(\"/jobs/\")\n");
@@ -1830,7 +1830,7 @@ Connection_cancelJob (Connection *self, PyObject *args, PyObject *kwds)
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_cancelJob() (error)\n");
@@ -1855,12 +1855,12 @@ Connection_cancelAllJobs (Connection *self, PyObject *args, PyObject *kwds)
   int i;
   static char *kwlist[] = { "name", "uri", "my_jobs", "purge_jobs", NULL };
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "|OOii", kwlist,
-				    &nameobj, &uriobj, &my_jobs, &purge_jobs))
+            &nameobj, &uriobj, &my_jobs, &purge_jobs))
     return NULL;
 
   if (nameobj && uriobj) {
     PyErr_SetString (PyExc_RuntimeError,
-		     "name or uri must be specified but not both");
+         "name or uri must be specified but not both");
     return NULL;
   }
 
@@ -1872,28 +1872,28 @@ Connection_cancelAllJobs (Connection *self, PyObject *args, PyObject *kwds)
       return NULL;
   } else {
     PyErr_SetString (PyExc_RuntimeError,
-		     "name or uri must be specified");
+         "name or uri must be specified");
     return NULL;
   }
 
   debugprintf ("-> Connection_cancelAllJobs(%s, my_jobs=%d, purge_jobs=%d)\n",
-	       nameobj ? name : uri, my_jobs, purge_jobs);
+         nameobj ? name : uri, my_jobs, purge_jobs);
   if (nameobj) {
     construct_uri (consuri, sizeof (consuri),
-		   "ipp://localhost/printers/", name);
+       "ipp://localhost/printers/", name);
     uri = consuri;
   }
 
   for (i = 0; i < 2; i++) {
     request = ippNewRequest(IPP_PURGE_JOBS);
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "printer-uri",
-		  NULL, uri);
+      NULL, uri);
 
     if (my_jobs)
     {
       ippAddBoolean (request, IPP_TAG_OPERATION, "my-jobs", my_jobs);
       ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		    "requesting-user-name", NULL, cupsUser());
+        "requesting-user-name", NULL, cupsUser());
     }
 
     ippAddBoolean (request, IPP_TAG_OPERATION, "purge-jobs", purge_jobs);
@@ -1904,11 +1904,11 @@ Connection_cancelAllJobs (Connection *self, PyObject *args, PyObject *kwds)
     if (answer && ippGetStatusCode (answer) == IPP_NOT_POSSIBLE) {
       ippDelete (answer);
       if (uriobj)
-	break;
+  break;
 
       // Perhaps it's a class, not a printer.
       construct_uri (consuri, sizeof (consuri),
-		     "ipp://localhost/classes/", name);
+         "ipp://localhost/classes/", name);
     } else break;
   }
 
@@ -1920,7 +1920,7 @@ Connection_cancelAllJobs (Connection *self, PyObject *args, PyObject *kwds)
 
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
 
@@ -1947,8 +1947,8 @@ Connection_createJob (Connection *self, PyObject *args, PyObject *kwds)
   int jobid;
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "OOO", kwlist,
-				    &printer_obj, &title_obj,
-				    &options_obj))
+            &printer_obj, &title_obj,
+            &options_obj))
     return NULL;
 
   if (UTF8_from_PyObj (&printer, printer_obj) == NULL)
@@ -1977,9 +1977,9 @@ Connection_createJob (Connection *self, PyObject *args, PyObject *kwds)
     }
 
     num_settings = cupsAddOption (UTF8_from_PyObj (&name, key),
-				  UTF8_from_PyObj (&value, val),
-				  num_settings,
-				  &settings);
+          UTF8_from_PyObj (&value, val),
+          num_settings,
+          &settings);
     free (name);
     free (value);
   }
@@ -2020,11 +2020,11 @@ Connection_startDocument (Connection *self, PyObject *args, PyObject *kwds)
   PyObject *format_obj;
   char *format;
   int last_document;
-  http_status_t	status;		/* Write status */
+  http_status_t  status;    /* Write status */
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "OiOOi", kwlist,
-				    &printer_obj, &jobid, &doc_name_obj,
-				    &format_obj, &last_document))
+            &printer_obj, &jobid, &doc_name_obj,
+            &format_obj, &last_document))
     return NULL;
 
   if (UTF8_from_PyObj (&printer, printer_obj) == NULL)
@@ -2073,10 +2073,10 @@ Connection_writeRequestData (Connection *self, PyObject *args, PyObject *kwds)
   PyObject *buffer_obj;
   char *buffer;
   int length;
-  http_status_t	status;		/* Write status */
+  http_status_t  status;    /* Write status */
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "Oi", kwlist,
-				    &buffer_obj, &length))
+            &buffer_obj, &length))
     return NULL;
 
   buffer = (char *) malloc((size_t) length);
@@ -2151,13 +2151,13 @@ Connection_moveJob (Connection *self, PyObject *args, PyObject *kwds)
   static char *kwlist[] = { "printer_uri", "job_id", "job_printer_uri", NULL };
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "|OiO", kwlist,
-				    &printeruriobj, &job_id,
-				    &jobprinteruriobj))
+            &printeruriobj, &job_id,
+            &jobprinteruriobj))
     return NULL;
 
   if (!jobprinteruriobj) {
     PyErr_SetString (PyExc_RuntimeError,
-		     "No job_printer_uri (destination) given");
+         "No job_printer_uri (destination) given");
     return NULL;
   }
 
@@ -2166,7 +2166,7 @@ Connection_moveJob (Connection *self, PyObject *args, PyObject *kwds)
       return NULL;
   } else if (job_id == -1) {
     PyErr_SetString (PyExc_RuntimeError,
-		     "job_id or printer_uri required");
+         "job_id or printer_uri required");
     return NULL;
   }
 
@@ -2181,26 +2181,26 @@ Connection_moveJob (Connection *self, PyObject *args, PyObject *kwds)
     char joburi[HTTP_MAX_URI];
     snprintf (joburi, sizeof (joburi), "ipp://localhost/jobs/%d", job_id);
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "job-uri", NULL,
-		  joburi);
+      joburi);
   } else {
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "printer-uri", NULL,
-		  printeruri);
+      printeruri);
     free (printeruri);
 
     if (job_id != -1)
       ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER, "job-id",
-		     job_id);
+         job_id);
   }
 
   ippAddString (request, IPP_TAG_JOB, IPP_TAG_URI, "job-printer-uri", NULL,
-		jobprinteruri);
+    jobprinteruri);
   free (jobprinteruri);
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/jobs");
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -2238,9 +2238,9 @@ Connection_authenticateJob (Connection *self, PyObject *args)
     for (i = 0; i < num_auth_info; i++) {
       PyObject *val = PyList_GetItem (auth_info_list, i); // borrowed ref
       if (UTF8_from_PyObj (&auth_info_values[i], val) == NULL) {
-	while (--i >= 0)
-	  free (auth_info_values[i]);
-	return NULL;
+  while (--i >= 0)
+    free (auth_info_values[i]);
+  return NULL;
       }
     }
   }
@@ -2250,14 +2250,14 @@ Connection_authenticateJob (Connection *self, PyObject *args)
   snprintf (uri, sizeof (uri), "ipp://localhost/jobs/%d", job_id);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "job-uri", NULL, uri);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		"requesting-user-name", NULL, cupsUser ());
-  if (auth_info_list) 
+    "requesting-user-name", NULL, cupsUser ());
+  if (auth_info_list)
     {
       ippAddStrings (request, IPP_TAG_OPERATION, IPP_TAG_TEXT, "auth-info",
-		     num_auth_info, NULL,
-		     (const char *const *) auth_info_values);
+         num_auth_info, NULL,
+         (const char *const *) auth_info_values);
       for (i = 0; i < num_auth_info; i++)
-	free (auth_info_values[i]);
+  free (auth_info_values[i]);
     }
 
   debugprintf ("cupsDoRequest(\"/jobs/\")\n");
@@ -2266,7 +2266,7 @@ Connection_authenticateJob (Connection *self, PyObject *args)
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_authenticateJob() (error)\n");
@@ -2294,14 +2294,14 @@ Connection_setJobHoldUntil (Connection *self, PyObject *args)
     return NULL;
 
   debugprintf ("-> Connection_setJobHoldUntil(%d,%s)\n",
-	       job_id, job_hold_until);
+         job_id, job_hold_until);
   request = ippNewRequest(IPP_SET_JOB_ATTRIBUTES);
   snprintf (uri, sizeof (uri), "ipp://localhost/jobs/%d", job_id);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "job-uri", NULL, uri);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		"requesting-user-name", NULL, cupsUser ());
+    "requesting-user-name", NULL, cupsUser ());
   num_options = cupsAddOption ("job-hold-until", job_hold_until,
-			       num_options, &options);
+             num_options, &options);
   cupsEncodeOptions (request, num_options, options);
   free (job_hold_until);
 
@@ -2311,7 +2311,7 @@ Connection_setJobHoldUntil (Connection *self, PyObject *args)
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_setJobHoldUntil() (error)\n");
@@ -2331,7 +2331,7 @@ Connection_restartJob (Connection *self, PyObject *args, PyObject *kwds)
   char *job_hold_until = NULL;
   char uri[1024];
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "i|s", kwlist,
-				    &job_id, &job_hold_until))
+            &job_id, &job_hold_until))
     return NULL;
 
   debugprintf ("-> Connection_restartJob(%d)\n", job_id);
@@ -2339,10 +2339,10 @@ Connection_restartJob (Connection *self, PyObject *args, PyObject *kwds)
   snprintf (uri, sizeof (uri), "ipp://localhost/jobs/%d", job_id);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "job-uri", NULL, uri);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		"requesting-user-name", NULL, cupsUser ());
+    "requesting-user-name", NULL, cupsUser ());
   if (job_hold_until)
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		  "job-hold-until", NULL, job_hold_until);
+      "job-hold-until", NULL, job_hold_until);
 
   debugprintf ("cupsDoRequest(\"/jobs/\")\n");
   Connection_begin_allow_threads (self);
@@ -2350,7 +2350,7 @@ Connection_restartJob (Connection *self, PyObject *args, PyObject *kwds)
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_restartJob() (error)\n");
@@ -2371,13 +2371,13 @@ Connection_getFile (Connection *self, PyObject *args, PyObject *kwds)
   http_status_t status;
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "s|siO", kwlist,
-				    &resource, &filename, &fd, &fileobj))
+            &resource, &filename, &fd, &fileobj))
     return NULL;
 
   if ((fd > -1 && (filename || fileobj)) ||
       (filename && fileobj)) {
     PyErr_SetString (PyExc_RuntimeError,
-		     "Only one destination type may be specified");
+         "Only one destination type may be specified");
     return NULL;
   }
 
@@ -2424,13 +2424,13 @@ Connection_putFile (Connection *self, PyObject *args, PyObject *kwds)
   http_status_t status;
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "s|siO", kwlist,
-				    &resource, &filename, &fd, &fileobj))
+            &resource, &filename, &fd, &fileobj))
     return NULL;
 
   if ((fd > -1 && (filename || fileobj)) ||
       (filename && fileobj)) {
     PyErr_SetString (PyExc_RuntimeError,
-		     "Only one destination type may be specified");
+         "Only one destination type may be specified");
     return NULL;
   }
 
@@ -2474,7 +2474,7 @@ add_modify_printer_request (const char *name)
   ipp_t *request = ippNewRequest (CUPS_ADD_MODIFY_PRINTER);
   construct_uri (uri, sizeof (uri), "ipp://localhost/printers/", name);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, uri);
+    "printer-uri", NULL, uri);
   return request;
 }
 
@@ -2485,7 +2485,7 @@ add_modify_class_request (const char *name)
   ipp_t *request = ippNewRequest (CUPS_ADD_MODIFY_CLASS);
   construct_uri (uri, sizeof (uri), "ipp://localhost/classes/", name);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, uri);
+    "printer-uri", NULL, uri);
   return request;
 }
 
@@ -2508,11 +2508,11 @@ Connection_addPrinter (Connection *self, PyObject *args, PyObject *kwds)
   ipp_t *request, *answer;
   int ppds_specified = 0;
   static char *kwlist[] = { "name", "filename", "ppdname", "info",
-			    "location", "device", "ppd", NULL };
+          "location", "device", "ppd", NULL };
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "O|OOOOOO", kwlist,
-				    &nameobj, &ppdfileobj, &ppdnameobj,
-				    &infoobj, &locationobj, &deviceobj, &ppd))
+            &nameobj, &ppdfileobj, &ppdnameobj,
+            &infoobj, &locationobj, &deviceobj, &ppd))
     return NULL;
 
   if (UTF8_from_PyObj (&name, nameobj) == NULL ||
@@ -2531,9 +2531,9 @@ Connection_addPrinter (Connection *self, PyObject *args, PyObject *kwds)
   }
 
   debugprintf ("-> Connection_addPrinter(%s,%s,%s,%s,%s,%s,%s)\n",
-	       name, ppdfile ? ppdfile: "", ppdname ? ppdname: "",
-	       info ? info: "", location ? location: "",
-	       device ? device: "", ppd ? "(PPD object)": "");
+         name, ppdfile ? ppdfile: "", ppdname ? ppdname: "",
+         info ? info: "", location ? location: "",
+         device ? device: "", ppd ? "(PPD object)": "");
 
   if (ppdfile)
     ppds_specified++;
@@ -2556,7 +2556,7 @@ Connection_addPrinter (Connection *self, PyObject *args, PyObject *kwds)
   }
   if (ppds_specified > 1) {
     PyErr_SetString (PyExc_RuntimeError,
-		     "Only one PPD may be given");
+         "Only one PPD may be given");
     debugprintf ("<- Connection_addPrinter() EXCEPTION\n");
     free (name);
     free (ppdfile);
@@ -2609,28 +2609,28 @@ Connection_addPrinter (Connection *self, PyObject *args, PyObject *kwds)
   free (name);
   if (ppdname) {
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		  "ppd-name", NULL, ppdname);
+      "ppd-name", NULL, ppdname);
     free (ppdname);
   }
   if (info) {
     ippAddString (request, IPP_TAG_PRINTER, IPP_TAG_TEXT,
-		  "printer-info", NULL, info);
+      "printer-info", NULL, info);
     free (info);
   }
   if (location) {
     ippAddString (request, IPP_TAG_PRINTER, IPP_TAG_TEXT,
-		  "printer-location", NULL, location);
+      "printer-location", NULL, location);
     free (location);
   }
   if (device) {
     ippAddString (request, IPP_TAG_PRINTER, IPP_TAG_URI,
-		  "device-uri", NULL, device);
+      "device-uri", NULL, device);
     free (device);
   }
   if (ppds_specified)
     ippAddString (request, IPP_TAG_PRINTER, IPP_TAG_KEYWORD,
-		  "printer-state-reasons", NULL, "none");
-  
+      "printer-state-reasons", NULL, "none");
+
   Connection_begin_allow_threads (self);
   if (ppdfile) {
     answer = cupsDoFileRequest (self->http, request, "/admin/", ppdfile);
@@ -2653,7 +2653,7 @@ Connection_addPrinter (Connection *self, PyObject *args, PyObject *kwds)
 
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
 
@@ -2689,7 +2689,7 @@ Connection_setPrinterDevice (Connection *self, PyObject *args)
   request = add_modify_printer_request (name);
   free (name);
   ippAddString (request, IPP_TAG_PRINTER, IPP_TAG_URI,
-		"device-uri", NULL, device_uri);
+    "device-uri", NULL, device_uri);
   free (device_uri);
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/admin/");
@@ -2702,7 +2702,7 @@ Connection_setPrinterDevice (Connection *self, PyObject *args)
 
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -2736,13 +2736,13 @@ Connection_setPrinterInfo (Connection *self, PyObject *args)
   request = add_modify_printer_request (name);
   for (i = 0; i < 2; i++) {
     ippAddString (request, IPP_TAG_PRINTER, IPP_TAG_TEXT,
-		  "printer-info", NULL, info);
+      "printer-info", NULL, info);
     Connection_begin_allow_threads (self);
     answer = cupsDoRequest (self->http, request, "/admin/");
     Connection_end_allow_threads (self);
     if (PyErr_Occurred ()) {
       if (answer)
-	ippDelete (answer);
+  ippDelete (answer);
       return NULL;
     }
 
@@ -2757,7 +2757,7 @@ Connection_setPrinterInfo (Connection *self, PyObject *args)
   free (info);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -2791,13 +2791,13 @@ Connection_setPrinterLocation (Connection *self, PyObject *args)
   request = add_modify_printer_request (name);
   for (i = 0; i < 2; i++) {
     ippAddString (request, IPP_TAG_PRINTER, IPP_TAG_TEXT,
-		  "printer-location", NULL, location);
+      "printer-location", NULL, location);
     Connection_begin_allow_threads (self);
     answer = cupsDoRequest (self->http, request, "/admin/");
     Connection_end_allow_threads (self);
     if (PyErr_Occurred ()) {
       if (answer)
-	ippDelete (answer);
+  ippDelete (answer);
       return NULL;
     }
 
@@ -2812,7 +2812,7 @@ Connection_setPrinterLocation (Connection *self, PyObject *args)
   free (location);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -2845,7 +2845,7 @@ Connection_setPrinterShared (Connection *self, PyObject *args)
     Connection_end_allow_threads (self);
     if (PyErr_Occurred ()) {
       if (answer)
-	ippDelete (answer);
+  ippDelete (answer);
       return NULL;
     }
 
@@ -2859,7 +2859,7 @@ Connection_setPrinterShared (Connection *self, PyObject *args)
   free (name);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -2902,7 +2902,7 @@ Connection_setPrinterJobSheets (Connection *self, PyObject *args)
   request = add_modify_printer_request (name);
   for (i = 0; i < 2; i++) {
     a = ippAddStrings (request, IPP_TAG_PRINTER, IPP_TAG_NAME,
-		       "job-sheets-default", 2, NULL, NULL);
+           "job-sheets-default", 2, NULL, NULL);
     ippSetString(request, &a, 0, strdup (start));
     ippSetString(request, &a, 1, strdup (end));
     Connection_begin_allow_threads (self);
@@ -2910,7 +2910,7 @@ Connection_setPrinterJobSheets (Connection *self, PyObject *args)
     Connection_end_allow_threads (self);
     if (PyErr_Occurred ()) {
       if (answer)
-	ippDelete (answer);
+  ippDelete (answer);
       return NULL;
     }
 
@@ -2926,7 +2926,7 @@ Connection_setPrinterJobSheets (Connection *self, PyObject *args)
   free (end);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -2960,13 +2960,13 @@ Connection_setPrinterErrorPolicy (Connection *self, PyObject *args)
   request = add_modify_printer_request (name);
   for (i = 0; i < 2; i++) {
     ippAddString (request, IPP_TAG_PRINTER, IPP_TAG_NAME,
-		  "printer-error-policy", NULL, policy);
+      "printer-error-policy", NULL, policy);
     Connection_begin_allow_threads (self);
     answer = cupsDoRequest (self->http, request, "/admin/");
     Connection_end_allow_threads (self);
     if (PyErr_Occurred ()) {
       if (answer)
-	ippDelete (answer);
+  ippDelete (answer);
       return NULL;
     }
 
@@ -2981,7 +2981,7 @@ Connection_setPrinterErrorPolicy (Connection *self, PyObject *args)
   free (policy);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -3015,13 +3015,13 @@ Connection_setPrinterOpPolicy (Connection *self, PyObject *args)
   request = add_modify_printer_request (name);
   for (i = 0; i < 2; i++) {
     ippAddString (request, IPP_TAG_PRINTER, IPP_TAG_NAME,
-		  "printer-op-policy", NULL, policy);
+      "printer-op-policy", NULL, policy);
     Connection_begin_allow_threads (self);
     answer = cupsDoRequest (self->http, request, "/admin/");
     Connection_end_allow_threads (self);
     if (PyErr_Occurred ()) {
       if (answer)
-	ippDelete (answer);
+  ippDelete (answer);
       return NULL;
     }
 
@@ -3036,7 +3036,7 @@ Connection_setPrinterOpPolicy (Connection *self, PyObject *args)
   free (policy);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -3048,7 +3048,7 @@ Connection_setPrinterOpPolicy (Connection *self, PyObject *args)
 
 static PyObject *
 do_requesting_user_names (Connection *self, PyObject *args,
-			  const char *requeststr)
+        const char *requeststr)
 {
   PyObject *nameobj;
   char *name;
@@ -3073,36 +3073,36 @@ do_requesting_user_names (Connection *self, PyObject *args,
     num_users = PyList_Size (users);
     if (num_users) {
       attr = ippAddStrings (request, IPP_TAG_PRINTER, IPP_TAG_NAME,
-			    requeststr, num_users, NULL, NULL);
+          requeststr, num_users, NULL, NULL);
       for (j = 0; j < num_users; j++) {
-	PyObject *username = PyList_GetItem (users, j); // borrowed ref
-	if (!PyUnicode_Check (username) && !PyBytes_Check (username)) {
-	  int k;
-	  PyErr_SetString (PyExc_TypeError, "String required");
-	  for (k = 0; k < j; k++) {
-	    free ((void *)ippGetString (attr, k, NULL));
-	    ippSetString(request, &attr, k, NULL);
-	  }
-	  ippDelete (request);
-	  return NULL;
-	}
-	ippSetString(request, &attr, j, UTF8_from_PyObj (&tmp, username));
-	free(tmp);
+  PyObject *username = PyList_GetItem (users, j); // borrowed ref
+  if (!PyUnicode_Check (username) && !PyBytes_Check (username)) {
+    int k;
+    PyErr_SetString (PyExc_TypeError, "String required");
+    for (k = 0; k < j; k++) {
+      free ((void *)ippGetString (attr, k, NULL));
+      ippSetString(request, &attr, k, NULL);
+    }
+    ippDelete (request);
+    return NULL;
+  }
+  ippSetString(request, &attr, j, UTF8_from_PyObj (&tmp, username));
+  free(tmp);
       }
     } else {
       attr = ippAddStrings (request, IPP_TAG_PRINTER, IPP_TAG_NAME,
-			    requeststr, 1, NULL, NULL);
+          requeststr, 1, NULL, NULL);
       if (strstr (requeststr, "denied"))
-	ippSetString(request, &attr, 0, strdup ("none"));
+  ippSetString(request, &attr, 0, strdup ("none"));
       else
-	ippSetString(request, &attr, 0, strdup ("all"));
+  ippSetString(request, &attr, 0, strdup ("all"));
     }
     Connection_begin_allow_threads (self);
     answer = cupsDoRequest (self->http, request, "/admin/");
     Connection_end_allow_threads (self);
     if (PyErr_Occurred ()) {
       if (answer)
-	ippDelete (answer);
+  ippDelete (answer);
       return NULL;
     }
 
@@ -3116,7 +3116,7 @@ do_requesting_user_names (Connection *self, PyObject *args,
   free (name);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -3199,26 +3199,26 @@ Connection_addPrinterOptionDefault (Connection *self, PyObject *args)
   request = add_modify_printer_request (name);
   for (i = 0; i < 2; i++) {
     if (!PyUnicode_Check (pyvalue) && !PyBytes_Check (pyvalue) &&
-	PySequence_Check (pyvalue)) {
+  PySequence_Check (pyvalue)) {
       ipp_attribute_t *attr;
       int len = PySequence_Size (pyvalue);
       int j;
       attr = ippAddStrings (request, IPP_TAG_PRINTER, IPP_TAG_NAME,
-			    opt, len, NULL, NULL);
+          opt, len, NULL, NULL);
       for (j = 0; j < len; j++) {
-	PyObject *each = PySequence_GetItem (pyvalue, j);
-	ippSetString(request, &attr, j, PyObject_to_string (each));
+  PyObject *each = PySequence_GetItem (pyvalue, j);
+  ippSetString(request, &attr, j, PyObject_to_string (each));
       }
     } else
       ippAddString (request, IPP_TAG_PRINTER, IPP_TAG_NAME,
-		    opt, NULL, PyObject_to_string (pyvalue));
+        opt, NULL, PyObject_to_string (pyvalue));
 
     Connection_begin_allow_threads (self);
     answer = cupsDoRequest (self->http, request, "/admin/");
     Connection_end_allow_threads (self);
     if (PyErr_Occurred ()) {
       if (answer)
-	ippDelete (answer);
+  ippDelete (answer);
       return NULL;
     }
 
@@ -3233,7 +3233,7 @@ Connection_addPrinterOptionDefault (Connection *self, PyObject *args)
   free (option);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -3274,13 +3274,13 @@ Connection_deletePrinterOptionDefault (Connection *self, PyObject *args)
   request = add_modify_printer_request (name);
   for (i = 0; i < 2; i++) {
     ippAddString (request, IPP_TAG_PRINTER, IPP_TAG_DELETEATTR,
-		  opt, NULL, NULL);
+      opt, NULL, NULL);
     Connection_begin_allow_threads (self);
     answer = cupsDoRequest (self->http, request, "/admin/");
     Connection_end_allow_threads (self);
     if (PyErr_Occurred ()) {
       if (answer)
-	ippDelete (answer);
+  ippDelete (answer);
       return NULL;
     }
 
@@ -3295,7 +3295,7 @@ Connection_deletePrinterOptionDefault (Connection *self, PyObject *args)
   free (option);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -3313,7 +3313,7 @@ Connection_deletePrinter (Connection *self, PyObject *args, PyObject *kwds)
 
 static PyObject *
 Connection_getPrinterAttributes (Connection *self, PyObject *args,
-				 PyObject *kwds)
+         PyObject *kwds)
 {
   PyObject *ret;
   PyObject *nameobj = NULL;
@@ -3330,12 +3330,12 @@ Connection_getPrinterAttributes (Connection *self, PyObject *args,
   static char *kwlist[] = { "name", "uri", "requested_attributes", NULL };
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "|OOO", kwlist,
-				    &nameobj, &uriobj, &requested_attrs))
+            &nameobj, &uriobj, &requested_attrs))
     return NULL;
 
   if (nameobj && uriobj) {
     PyErr_SetString (PyExc_RuntimeError,
-		     "name or uri must be specified but not both");
+         "name or uri must be specified but not both");
     return NULL;
   }
 
@@ -3347,37 +3347,37 @@ Connection_getPrinterAttributes (Connection *self, PyObject *args,
       return NULL;
   } else {
     PyErr_SetString (PyExc_RuntimeError,
-		     "name or uri must be specified");
+         "name or uri must be specified");
     return NULL;
   }
 
   if (requested_attrs) {
     if (get_requested_attrs (requested_attrs, &n_attrs, &attrs) == -1) {
       if (nameobj)
-	free (name);
+  free (name);
       else if (uriobj)
-	free (uri);
+  free (uri);
       return NULL;
     }
   }
 
   debugprintf ("-> Connection_getPrinterAttributes(%s)\n",
-	       nameobj ? name : uri);
+         nameobj ? name : uri);
 
   if (nameobj) {
     construct_uri (consuri, sizeof (consuri),
-		   "ipp://localhost/printers/", name);
+       "ipp://localhost/printers/", name);
     uri = consuri;
   }
 
   for (i = 0; i < 2; i++) {
     request = ippNewRequest (IPP_GET_PRINTER_ATTRIBUTES);
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		  "printer-uri", NULL, uri);
+      "printer-uri", NULL, uri);
     if (requested_attrs)
       ippAddStrings (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD,
-		     "requested-attributes", n_attrs, NULL,
-		     (const char **) attrs);
+         "requested-attributes", n_attrs, NULL,
+         (const char **) attrs);
     debugprintf ("trying request with uri %s\n", uri);
     Connection_begin_allow_threads (self);
     answer = cupsDoRequest (self->http, request, "/");
@@ -3385,11 +3385,11 @@ Connection_getPrinterAttributes (Connection *self, PyObject *args,
     if (answer && ippGetStatusCode (answer) == IPP_NOT_POSSIBLE) {
       ippDelete (answer);
       if (uriobj)
-	break;
+  break;
 
       // Perhaps it's a class, not a printer.
       construct_uri (consuri, sizeof (consuri),
-		     "ipp://localhost/classes/", name);
+         "ipp://localhost/classes/", name);
     } else break;
   }
 
@@ -3404,7 +3404,7 @@ Connection_getPrinterAttributes (Connection *self, PyObject *args,
 
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
 
@@ -3421,7 +3421,7 @@ Connection_getPrinterAttributes (Connection *self, PyObject *args,
       break;
 
     for (; attr && ippGetGroupTag (attr) == IPP_TAG_PRINTER;
-	 attr = ippNextAttribute (answer)) {
+   attr = ippNextAttribute (answer)) {
       size_t namelen = strlen (ippGetName (attr));
       int is_list = ippGetCount (attr) > 1;
 
@@ -3429,23 +3429,23 @@ Connection_getPrinterAttributes (Connection *self, PyObject *args,
       // job-sheets-default is special, since it is always two values.
       // Make it a tuple.
       if (!strcmp (ippGetName (attr), "job-sheets-default") &&
-	  ippGetValueTag (attr) == IPP_TAG_NAME) {
-	PyObject *startobj, *endobj, *tuple;
-	const char *start, *end;
-	start = ippGetString (attr, 0, NULL);
-	if (ippGetCount (attr) >= 2)
-	  end = ippGetString (attr, 1, NULL);
-	else
-	  end = "";
+    ippGetValueTag (attr) == IPP_TAG_NAME) {
+  PyObject *startobj, *endobj, *tuple;
+  const char *start, *end;
+  start = ippGetString (attr, 0, NULL);
+  if (ippGetCount (attr) >= 2)
+    end = ippGetString (attr, 1, NULL);
+  else
+    end = "";
 
-	startobj = PyObj_from_UTF8 (start);
-	endobj = PyObj_from_UTF8 (end);
-	tuple = Py_BuildValue ("(OO)", startobj, endobj);
-	Py_DECREF (startobj);
-	Py_DECREF (endobj);
-	PyDict_SetItemString (ret, "job-sheets-default", tuple);
-	Py_DECREF (tuple);
-	continue;
+  startobj = PyObj_from_UTF8 (start);
+  endobj = PyObj_from_UTF8 (end);
+  tuple = Py_BuildValue ("(OO)", startobj, endobj);
+  Py_DECREF (startobj);
+  Py_DECREF (endobj);
+  PyDict_SetItemString (ret, "job-sheets-default", tuple);
+  Py_DECREF (tuple);
+  continue;
       }
 
       // Check for '-supported' suffix.  Any xxx-supported attribute
@@ -3454,51 +3454,51 @@ Connection_getPrinterAttributes (Connection *self, PyObject *args,
       // Also check for attributes that are known to allow multiple
       // string values, and make them lists.
       if (!is_list && namelen > 10) {
-	const char *multivalue_options[] =
-	  {
-	    "notify-events-default",
-	    "requesting-user-name-allowed",
-	    "requesting-user-name-denied",
-	    "printer-state-reasons",
-	    "marker-colors",
-	    "marker-names",
-	    "marker-types",
-	    "marker-levels",
-	    "member-names",
-	    NULL
-	  };
+  const char *multivalue_options[] =
+    {
+      "notify-events-default",
+      "requesting-user-name-allowed",
+      "requesting-user-name-denied",
+      "printer-state-reasons",
+      "marker-colors",
+      "marker-names",
+      "marker-types",
+      "marker-levels",
+      "member-names",
+      NULL
+    };
 
-	switch (ippGetValueTag (attr)) {
-	case IPP_TAG_NAME:
-	case IPP_TAG_TEXT:
-	case IPP_TAG_KEYWORD:
-	case IPP_TAG_URI:
-	case IPP_TAG_CHARSET:
-	case IPP_TAG_MIMETYPE:
-	case IPP_TAG_LANGUAGE:
-	case IPP_TAG_ENUM:
-	case IPP_TAG_INTEGER:
-	case IPP_TAG_RESOLUTION:
-	  is_list = !strcmp (ippGetName (attr) + namelen - 10, "-supported");
+  switch (ippGetValueTag (attr)) {
+  case IPP_TAG_NAME:
+  case IPP_TAG_TEXT:
+  case IPP_TAG_KEYWORD:
+  case IPP_TAG_URI:
+  case IPP_TAG_CHARSET:
+  case IPP_TAG_MIMETYPE:
+  case IPP_TAG_LANGUAGE:
+  case IPP_TAG_ENUM:
+  case IPP_TAG_INTEGER:
+  case IPP_TAG_RESOLUTION:
+    is_list = !strcmp (ippGetName (attr) + namelen - 10, "-supported");
 
-	  if (!is_list) {
-	    const char **opt;
-	    for (opt = multivalue_options; !is_list && *opt; opt++)
-	      is_list = !strcmp (ippGetName (attr), *opt);
-	  }
+    if (!is_list) {
+      const char **opt;
+      for (opt = multivalue_options; !is_list && *opt; opt++)
+        is_list = !strcmp (ippGetName (attr), *opt);
+    }
 
-	default:
-	  break;
-	}
+  default:
+    break;
+  }
       }
 
       if (is_list) {
-	PyObject *list = PyList_from_attr_values (attr);
-	PyDict_SetItemString (ret, ippGetName (attr), list);
-	Py_DECREF (list);
+  PyObject *list = PyList_from_attr_values (attr);
+  PyDict_SetItemString (ret, ippGetName (attr), list);
+  Py_DECREF (list);
       } else {
-	PyObject *val = PyObject_from_attr_value (attr, i);
-	PyDict_SetItemString (ret, ippGetName (attr), val);
+  PyObject *val = PyObject_from_attr_value (attr, i);
+  PyDict_SetItemString (ret, ippGetName (attr), val);
       }
     }
 
@@ -3535,11 +3535,11 @@ Connection_addPrinterToClass (Connection *self, PyObject *args)
   // Does the class exist, and is the printer already in it?
   request = ippNewRequest (IPP_GET_PRINTER_ATTRIBUTES);
   construct_uri (classuri, sizeof (classuri),
-		 "ipp://localhost/classes/", classname);
-	    
+     "ipp://localhost/classes/", classname);
+
   free (classname);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, classuri);
+    "printer-uri", NULL, classuri);
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/");
   Connection_end_allow_threads (self);
@@ -3549,21 +3549,21 @@ Connection_addPrinterToClass (Connection *self, PyObject *args)
     if (printers) {
       int i;
       for (i = 0; i < ippGetCount (printers); i++) {
-	if (!strcasecmp (ippGetString (printers, i, NULL), printername)) {
-	  ippDelete (answer);
-	  PyErr_SetString (PyExc_RuntimeError, "Printer already in class");
-	  free (printername);
-	  return NULL;
-	}
+  if (!strcasecmp (ippGetString (printers, i, NULL), printername)) {
+    ippDelete (answer);
+    PyErr_SetString (PyExc_RuntimeError, "Printer already in class");
+    free (printername);
+    return NULL;
+  }
       }
     }
   }
 
   request = ippNewRequest (CUPS_ADD_CLASS);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, classuri);
+    "printer-uri", NULL, classuri);
   construct_uri (printeruri, sizeof (printeruri),
-		 "ipp://localhost/printers/", printername);
+     "ipp://localhost/printers/", printername);
   free (printername);
   if (answer) {
     ipp_attribute_t *printers;
@@ -3572,8 +3572,8 @@ Connection_addPrinterToClass (Connection *self, PyObject *args)
       ipp_attribute_t *attr;
       int i;
       attr = ippAddStrings (request, IPP_TAG_PRINTER, IPP_TAG_URI,
-			    "member-uris", ippGetCount (printers) + 1,
-			    NULL, NULL);
+          "member-uris", ippGetCount (printers) + 1,
+          NULL, NULL);
       for (i = 0; i < ippGetCount (printers); i++)
         ippSetString(request, &attr, i,
                      strdup (ippGetString (printers, i, NULL)));
@@ -3587,7 +3587,7 @@ Connection_addPrinterToClass (Connection *self, PyObject *args)
   // If the class didn't exist, create a new one.
   if (!ippFindAttribute (request, "member-uris", IPP_TAG_URI))
     ippAddString (request, IPP_TAG_PRINTER, IPP_TAG_URI,
-		  "member-uris", NULL, printeruri);
+      "member-uris", NULL, printeruri);
 
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/admin/");
@@ -3600,7 +3600,7 @@ Connection_addPrinterToClass (Connection *self, PyObject *args)
 
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -3640,14 +3640,14 @@ Connection_deletePrinterFromClass (Connection *self, PyObject *args)
   // Does the class exist, and is the printer in it?
   request = ippNewRequest (IPP_GET_PRINTER_ATTRIBUTES);
   construct_uri (classuri, sizeof (classuri),
-		 "ipp://localhost/classes/", classname);
+     "ipp://localhost/classes/", classname);
   free (classname);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, classuri);
+    "printer-uri", NULL, classuri);
   ippAddStrings (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD,
-		 "requested-attributes",
-		 sizeof(requested_attrs) / sizeof(requested_attrs[0]),
-		 NULL, requested_attrs);
+     "requested-attributes",
+     sizeof(requested_attrs) / sizeof(requested_attrs[0]),
+     NULL, requested_attrs);
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/");
   Connection_end_allow_threads (self);
@@ -3678,7 +3678,7 @@ Connection_deletePrinterFromClass (Connection *self, PyObject *args)
 
   request = ippNewRequest (CUPS_ADD_CLASS);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, classuri);
+    "printer-uri", NULL, classuri);
 
   // Only printer in class?  Delete the class.
   if (ippGetCount (printers) == 1)
@@ -3688,8 +3688,8 @@ Connection_deletePrinterFromClass (Connection *self, PyObject *args)
     ipp_attribute_t *newlist;
     int j;
     newlist = ippAddStrings (request, IPP_TAG_PRINTER, IPP_TAG_URI,
-			     "member-uris", ippGetCount (printers) - 1,
-			     NULL, NULL);
+           "member-uris", ippGetCount (printers) - 1,
+           NULL, NULL);
     for (j = 0; j < i; j++)
       ippSetString(request, &newlist, j,
                    strdup (ippGetString (printers, j, NULL)));
@@ -3710,7 +3710,7 @@ Connection_deletePrinterFromClass (Connection *self, PyObject *args)
 
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -3736,16 +3736,16 @@ Connection_deleteClass (Connection *self, PyObject *args)
 
   request = ippNewRequest (CUPS_DELETE_CLASS);
   construct_uri (classuri, sizeof (classuri),
-		 "ipp://localhost/classes/", classname);
+     "ipp://localhost/classes/", classname);
   free (classname);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, classuri);
+    "printer-uri", NULL, classuri);
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/admin/");
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -3856,7 +3856,7 @@ Connection_getPPD3 (Connection *self, PyObject *args, PyObject *kwds)
   static char *kwlist[] = { "name", "modtime", "filename", NULL };
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "O|OO", kwlist,
-				    &printerobj, &fmodtime, &filenameobj))
+            &printerobj, &fmodtime, &filenameobj))
     return NULL;
 
   if (UTF8_from_PyObj (&printer, printerobj) == NULL)
@@ -3892,7 +3892,7 @@ Connection_getPPD3 (Connection *self, PyObject *args, PyObject *kwds)
   debugprintf ("-> Connection_getPPD3()\n");
   Connection_begin_allow_threads (self);
   status = cupsGetPPD3 (self->http, printer, &modtime,
-			fname, sizeof (fname));
+      fname, sizeof (fname));
   Connection_end_allow_threads (self);
 
   free (printer);
@@ -3932,7 +3932,7 @@ Connection_getPPD3 (Connection *self, PyObject *args, PyObject *kwds)
   PyTuple_SetItem (ret, 2, obj);
 
   debugprintf ("<- Connection_getPPD3() = (%d,%ld,%s)\n",
-	       status, modtime, fname);
+         status, modtime, fname);
   return ret;
 }
 #endif /* HAVE_CUPS_1_4 */
@@ -3961,8 +3961,8 @@ Connection_printTestPage (Connection *self, PyObject *args, PyObject *kwds)
   static char *kwlist[] = { "name", "file", "title", "format", "user", NULL };
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "O|OOOO", kwlist,
-				    &printerobj, &fileobj, &titleobj,
-				    &formatobj, &userobj))
+            &printerobj, &fileobj, &titleobj,
+            &formatobj, &userobj))
     return NULL;
 
   if (UTF8_from_PyObj (&printer, printerobj) == NULL)
@@ -3979,45 +3979,45 @@ Connection_printTestPage (Connection *self, PyObject *args, PyObject *kwds)
     free (user);
     return NULL;
   }
-    
+
   if (!fileobj) {
     const char *testprint[] = { "%s/data/testprint",
-				"%s/data/testprint.ps",
-				NULL };
+        "%s/data/testprint.ps",
+        NULL };
     if ((datadir = getenv ("CUPS_DATADIR")) != NULL) {
       const char **pattern;
       for (pattern = testprint; *pattern != NULL; pattern++) {
-	snprintf (filename, sizeof (filename), *pattern, datadir);
-	if (access (filename, R_OK) == 0)
-	  break;
+  snprintf (filename, sizeof (filename), *pattern, datadir);
+  if (access (filename, R_OK) == 0)
+    break;
       }
     } else {
       const char *const dirs[] = { "/usr/share/cups",
-				   "/usr/local/share/cups",
-				   NULL };
+           "/usr/local/share/cups",
+           NULL };
       int found = 0;
       int i;
       for (i = 0; (datadir = dirs[i]) != NULL; i++) {
-	const char **pattern;
-	for (pattern = testprint; *pattern != NULL; pattern++) {
-	  snprintf (filename, sizeof (filename), *pattern, datadir);
-	  if (access (filename, R_OK) == 0) {
-	    found = 1;
-	    break;
-	  }
-	}
+  const char **pattern;
+  for (pattern = testprint; *pattern != NULL; pattern++) {
+    snprintf (filename, sizeof (filename), *pattern, datadir);
+    if (access (filename, R_OK) == 0) {
+      found = 1;
+      break;
+    }
+  }
 
-	if (found)
-	  break;
+  if (found)
+    break;
       }
 
       if (datadir == NULL)
-	/* We haven't found the testprint.ps file, so just pick a path
-	 * and try it.  This will certainly fail with
-	 * client-error-not-found, but we'll let that happen rather
-	 * than raising an exception so as to be consistent with the
-	 * case where CUPS_DATADIR is set and we trust it. */
-	snprintf (filename, sizeof (filename), testprint[0], dirs[0]);
+  /* We haven't found the testprint.ps file, so just pick a path
+   * and try it.  This will certainly fail with
+   * client-error-not-found, but we'll let that happen rather
+   * than raising an exception so as to be consistent with the
+   * case where CUPS_DATADIR is set and we trust it. */
+  snprintf (filename, sizeof (filename), testprint[0], dirs[0]);
     }
 
     file = filename;
@@ -4027,22 +4027,22 @@ Connection_printTestPage (Connection *self, PyObject *args, PyObject *kwds)
     title = "Test Page";
 
   if (!userobj)
-	  user = (char *) cupsUser();
+    user = (char *) cupsUser();
 
   construct_uri (uri, sizeof (uri),
-		 "ipp://localhost/printers/", printer);
+     "ipp://localhost/printers/", printer);
   resource = uri + strlen ("ipp://localhost");
   for (i = 0; i < 2; i++) {
     request = ippNewRequest (IPP_PRINT_JOB);
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "printer-uri",
-		  NULL, uri);
+      NULL, uri);
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		  "requesting-user-name", NULL, user);
+      "requesting-user-name", NULL, user);
     ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME, "job-name",
-		  NULL, title);
+      NULL, title);
     if (format)
       ippAddString (request, IPP_TAG_JOB, IPP_TAG_MIMETYPE, "document-format",
-		    NULL, format);
+        NULL, format);
 
     Connection_begin_allow_threads (self);
     answer = cupsDoFileRequest (self->http, request, resource, file);
@@ -4051,7 +4051,7 @@ Connection_printTestPage (Connection *self, PyObject *args, PyObject *kwds)
       ippDelete (answer);
       // Perhaps it's a class, not a printer.
       construct_uri (uri, sizeof (uri),
-		     "ipp://localhost/classes/", printer);
+         "ipp://localhost/classes/", printer);
     } else break;
   }
 
@@ -4067,7 +4067,7 @@ Connection_printTestPage (Connection *self, PyObject *args, PyObject *kwds)
 
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     return NULL;
@@ -4202,9 +4202,9 @@ Connection_adminSetServerSettings (Connection *self, PyObject *args)
     UTF8_from_PyObj (&value, val);
     debugprintf ("%s: %s\n", name, value);
     num_settings = cupsAddOption (name,
-				  value,
-				  num_settings,
-				  &settings);
+          value,
+          num_settings,
+          &settings);
     free (name);
     free (value);
   }
@@ -4238,7 +4238,7 @@ Connection_getSubscriptions (Connection *self, PyObject *args, PyObject *kwds)
   static char *kwlist[] = { "uri", "my_subscriptions", "job_id", NULL };
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "O|Oi", kwlist,
-				    &uriobj, &my_subscriptions, &job_id))
+            &uriobj, &my_subscriptions, &job_id))
     return NULL;
 
   if (UTF8_from_PyObj (&uri, uriobj) == NULL)
@@ -4252,24 +4252,24 @@ Connection_getSubscriptions (Connection *self, PyObject *args, PyObject *kwds)
   debugprintf ("-> Connection_getSubscriptions()\n");
   request = ippNewRequest (IPP_GET_SUBSCRIPTIONS);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, uri);
+    "printer-uri", NULL, uri);
   free (uri);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		"requesting-user-name", NULL, cupsUser ());
+    "requesting-user-name", NULL, cupsUser ());
 
   if (my_subscriptions == Py_True)
     ippAddBoolean (request, IPP_TAG_OPERATION, "my-subscriptions", 1);
 
   if (job_id != -1)
     ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-		   "job-id", job_id);
+       "job-id", job_id);
 
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/");
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_getSubscriptions() EXCEPTION\n");
@@ -4287,8 +4287,8 @@ Connection_getSubscriptions (Connection *self, PyObject *args, PyObject *kwds)
     if (ippGetGroupTag (attr) == IPP_TAG_ZERO) {
       // End of subscription.
       if (subscription) {
-	PyList_Append (result, subscription);
-	Py_DECREF (subscription);
+  PyList_Append (result, subscription);
+  Py_DECREF (subscription);
       }
 
       subscription = NULL;
@@ -4323,7 +4323,7 @@ Connection_getSubscriptions (Connection *self, PyObject *args, PyObject *kwds)
 
 static PyObject *
 Connection_createSubscription (Connection *self, PyObject *args,
-			       PyObject *kwds)
+             PyObject *kwds)
 {
   PyObject *resource_uriobj;
   char *resource_uri;
@@ -4336,13 +4336,13 @@ Connection_createSubscription (Connection *self, PyObject *args,
   char *tmp;
   ipp_attribute_t *attr;
   static char *kwlist[] = { "uri", "events", "job_id", "recipient_uri",
-			    "lease_duration", "time_interval", "user_data",
-			    NULL };
+          "lease_duration", "time_interval", "user_data",
+          NULL };
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "O|OiOiiO", kwlist,
-				    &resource_uriobj, &events, &job_id,
-				    &recipient_uriobj, &lease_duration,
-				    &time_interval, &user_dataobj))
+            &resource_uriobj, &events, &job_id,
+            &recipient_uriobj, &lease_duration,
+            &time_interval, &user_dataobj))
     return NULL;
 
   if (UTF8_from_PyObj (&resource_uri, resource_uriobj) == NULL)
@@ -4371,8 +4371,8 @@ Connection_createSubscription (Connection *self, PyObject *args,
     for (i = 0; i < n; i++) {
       PyObject *event = PyList_GetItem (events, i);
       if (!PyUnicode_Check (event) && !PyBytes_Check (event)) {
-	PyErr_SetString (PyExc_TypeError, "events must be a list of strings");
-	return NULL;
+  PyErr_SetString (PyExc_TypeError, "events must be a list of strings");
+  return NULL;
       }
     }
   }
@@ -4380,30 +4380,30 @@ Connection_createSubscription (Connection *self, PyObject *args,
   debugprintf ("-> Connection_createSubscription(%s)\n", resource_uri);
   request = ippNewRequest (IPP_CREATE_PRINTER_SUBSCRIPTION);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, resource_uri);
+    "printer-uri", NULL, resource_uri);
   ippAddString (request, IPP_TAG_SUBSCRIPTION, IPP_TAG_KEYWORD,
-		"notify-pull-method", NULL, "ippget");
+    "notify-pull-method", NULL, "ippget");
   ippAddString (request, IPP_TAG_SUBSCRIPTION, IPP_TAG_CHARSET,
-		"notify-charset", NULL, "utf-8");
+    "notify-charset", NULL, "utf-8");
   ippAddString (request, IPP_TAG_SUBSCRIPTION, IPP_TAG_NAME,
-		"requesting-user-name", NULL, cupsUser ());
+    "requesting-user-name", NULL, cupsUser ());
 
   if (recipient_uriobj) {
     ippAddString (request, IPP_TAG_SUBSCRIPTION, IPP_TAG_URI,
-		  "notify-recipient-uri", NULL, recipient_uri);
+      "notify-recipient-uri", NULL, recipient_uri);
     free (recipient_uri);
   }
 
   if (user_dataobj) {
     ippAddString (request, IPP_TAG_SUBSCRIPTION, IPP_TAG_STRING,
-		  "notify-user-data", NULL, user_data);
+      "notify-user-data", NULL, user_data);
     free (user_data);
   }
 
   if (events) {
     attr = ippAddStrings (request, IPP_TAG_SUBSCRIPTION,
-			  IPP_TAG_KEYWORD, "notify-events",
-			  n, NULL, NULL);
+        IPP_TAG_KEYWORD, "notify-events",
+        n, NULL, NULL);
     for (i = 0; i < n; i++) {
       PyObject *event = PyList_GetItem (events, i);
       ippSetString(request, &attr, i, UTF8_from_PyObj (&tmp, event));
@@ -4413,22 +4413,22 @@ Connection_createSubscription (Connection *self, PyObject *args,
 
   if (lease_duration != -1)
     ippAddInteger (request, IPP_TAG_SUBSCRIPTION, IPP_TAG_INTEGER,
-		   "notify-lease-duration", lease_duration);
+       "notify-lease-duration", lease_duration);
 
   if (time_interval != -1)
     ippAddInteger (request, IPP_TAG_SUBSCRIPTION, IPP_TAG_INTEGER,
-		   "notify-time-interval", time_interval);
+       "notify-time-interval", time_interval);
 
   if (job_id != -1)
     ippAddInteger (request, IPP_TAG_SUBSCRIPTION, IPP_TAG_INTEGER,
-		   "notify-job-id", job_id);
+       "notify-job-id", job_id);
 
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/");
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_createSubscription() EXCEPTION\n");
@@ -4439,11 +4439,11 @@ Connection_createSubscription (Connection *self, PyObject *args,
   for (attr = ippFirstAttribute (answer); attr; attr = ippNextAttribute (answer)) {
     if (ippGetGroupTag (attr) == IPP_TAG_SUBSCRIPTION) {
       if (ippGetValueTag (attr) == IPP_TAG_INTEGER &&
-	  !strcmp (ippGetName (attr), "notify-subscription-id"))
-	i = ippGetInteger (attr, 0);
+    !strcmp (ippGetName (attr), "notify-subscription-id"))
+  i = ippGetInteger (attr, 0);
       else if (ippGetValueTag (attr) == IPP_TAG_ENUM &&
-	       !strcmp (ippGetName (attr), "notify-status-code"))
-	debugprintf ("notify-status-code = %d\n", ippGetInteger (attr, 0));
+         !strcmp (ippGetName (attr), "notify-status-code"))
+  debugprintf ("notify-status-code = %d\n", ippGetInteger (attr, 0));
     }
   }
 
@@ -4467,7 +4467,7 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
   static char *kwlist[] = { "subscription_ids", "sequence_numbers", NULL };
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "O|O", kwlist,
-				    &subscription_ids, &sequence_numbers))
+            &subscription_ids, &sequence_numbers))
     return NULL;
 
   if (!PyList_Check (subscription_ids)) {
@@ -4484,7 +4484,7 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
     if (!PyInt_Check (id)) {
 #endif
       PyErr_SetString (PyExc_TypeError, "subscription_ids must be a list "
-		       "of integers");
+           "of integers");
       return NULL;
     }
   }
@@ -4503,9 +4503,9 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
 #else
       if (!PyInt_Check (id)) {
 #endif
-	PyErr_SetString (PyExc_TypeError, "sequence_numbers must be a list "
-			 "of integers");
-	return NULL;
+  PyErr_SetString (PyExc_TypeError, "sequence_numbers must be a list "
+       "of integers");
+  return NULL;
       }
     }
   }
@@ -4513,12 +4513,12 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
   debugprintf ("-> Connection_getNotifications()\n");
   request = ippNewRequest (IPP_GET_NOTIFICATIONS);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, "/");
+    "printer-uri", NULL, "/");
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		"requesting-user-name", NULL, cupsUser ());
+    "requesting-user-name", NULL, cupsUser ());
 
   attr = ippAddIntegers (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-			 "notify-subscription-ids", num_ids, NULL);
+       "notify-subscription-ids", num_ids, NULL);
   for (i = 0; i < num_ids; i++) {
     PyObject *id = PyList_GetItem (subscription_ids, i);
 #if PY_MAJOR_VERSION >= 3
@@ -4530,7 +4530,7 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
 
   if (sequence_numbers) {
     attr = ippAddIntegers (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-			   "notify-sequence-numbers", num_seqs, NULL);
+         "notify-sequence-numbers", num_seqs, NULL);
     for (i = 0; i < num_seqs; i++) {
       PyObject *num = PyList_GetItem (sequence_numbers, i);
 #if PY_MAJOR_VERSION >= 3
@@ -4540,13 +4540,13 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
 #endif
     }
   }
-  
+
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/");
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_getNotifications() EXCEPTION\n");
@@ -4589,8 +4589,8 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
     if (ippGetGroupTag (attr) == IPP_TAG_ZERO) {
       // End of event notification.
       if (event) {
-	PyList_Append (events, event);
-	Py_DECREF (event);
+  PyList_Append (events, event);
+  Py_DECREF (event);
       }
 
       event = NULL;
@@ -4598,9 +4598,9 @@ Connection_getNotifications (Connection *self, PyObject *args, PyObject *kwds)
     }
 
     if (ippGetCount (attr) > 1 ||
-	!strcmp (ippGetName (attr), "notify-events") ||
-	!strcmp (ippGetName (attr), "printer-state-reasons") ||
-	!strcmp (ippGetName (attr), "job-printer-state-reasons"))
+  !strcmp (ippGetName (attr), "notify-events") ||
+  !strcmp (ippGetName (attr), "printer-state-reasons") ||
+  !strcmp (ippGetName (attr), "job-printer-state-reasons"))
       obj = PyList_from_attr_values (attr);
     else
       obj = PyObject_from_attr_value (attr, 0);
@@ -4637,28 +4637,28 @@ Connection_renewSubscription (Connection *self, PyObject *args, PyObject *kwds)
   static char *kwlist[] = { "id", "lease_duration", NULL };
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "i|i", kwlist,
-				    &id, &lease_duration))
+            &id, &lease_duration))
     return NULL;
 
   debugprintf ("-> Connection_renewSubscription()\n");
   request = ippNewRequest (IPP_RENEW_SUBSCRIPTION);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, "/");
+    "printer-uri", NULL, "/");
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		"requesting-user-name", NULL, cupsUser ());
+    "requesting-user-name", NULL, cupsUser ());
   ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-		 "notify-subscription-id", id);
+     "notify-subscription-id", id);
 
   if (lease_duration != -1)
     ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-		   "notify-lease-duration", lease_duration);
+       "notify-lease-duration", lease_duration);
 
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/");
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_renewSubscription() EXCEPTION\n");
@@ -4682,18 +4682,18 @@ Connection_cancelSubscription (Connection *self, PyObject *args)
   debugprintf ("-> Connection_cancelSubscription()\n");
   request = ippNewRequest (IPP_CANCEL_SUBSCRIPTION);
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI,
-		"printer-uri", NULL, "/");
+    "printer-uri", NULL, "/");
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_NAME,
-		"requesting-user-name", NULL, cupsUser ());
+    "requesting-user-name", NULL, cupsUser ());
   ippAddInteger (request, IPP_TAG_OPERATION, IPP_TAG_INTEGER,
-		"notify-subscription-id", id);
+    "notify-subscription-id", id);
 
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/");
   Connection_end_allow_threads (self);
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
-		   answer ? NULL : cupsLastErrorString ());
+       answer ? NULL : cupsLastErrorString ());
     if (answer)
       ippDelete (answer);
     debugprintf ("<- Connection_cancelSubscription() EXCEPTION\n");
@@ -4722,8 +4722,8 @@ Connection_printFile (Connection *self, PyObject *args, PyObject *kwds)
   int jobid;
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "OOOO", kwlist,
-				    &printer_obj, &filename_obj, &title_obj,
-				    &options_obj))
+            &printer_obj, &filename_obj, &title_obj,
+            &options_obj))
     return NULL;
 
   if (UTF8_from_PyObj (&printer, printer_obj) == NULL)
@@ -4758,9 +4758,9 @@ Connection_printFile (Connection *self, PyObject *args, PyObject *kwds)
     }
 
     num_settings = cupsAddOption (UTF8_from_PyObj (&name, key),
-				  UTF8_from_PyObj (&value, val),
-				  num_settings,
-				  &settings);
+          UTF8_from_PyObj (&value, val),
+          num_settings,
+          &settings);
     free (name);
     free (value);
   }
@@ -4818,8 +4818,8 @@ Connection_printFiles (Connection *self, PyObject *args, PyObject *kwds)
   int jobid;
 
   if (!PyArg_ParseTupleAndKeywords (args, kwds, "OOOO", kwlist,
-				    &printer_obj, &filenames_obj, &title_obj,
-				    &options_obj))
+            &printer_obj, &filenames_obj, &title_obj,
+            &options_obj))
     return NULL;
 
   if (UTF8_from_PyObj (&printer, printer_obj) == NULL)
@@ -4871,9 +4871,9 @@ Connection_printFiles (Connection *self, PyObject *args, PyObject *kwds)
     }
 
     num_settings = cupsAddOption (UTF8_from_PyObj (&name, key),
-				  UTF8_from_PyObj (&value, key),
-				  num_settings,
-				  &settings);
+          UTF8_from_PyObj (&value, key),
+          num_settings,
+          &settings);
     free (name);
     free (value);
   }
@@ -4881,7 +4881,7 @@ Connection_printFiles (Connection *self, PyObject *args, PyObject *kwds)
   Connection_begin_allow_threads (self);
   jobid = cupsPrintFiles2 (self->http, printer, num_filenames,
                            (const char **) filenames, title, num_settings,
-						   settings);
+               settings);
   Connection_end_allow_threads (self);
 
   if (jobid < 0) {
@@ -5010,7 +5010,7 @@ PyMethodDef Connection_methods[] =
       "@return: temporary filename holding the PPD\n"
       "@raise RuntimeError: Not supported in libcups until 1.3\n"
       "@raise IPPError: IPP problem" },
-    
+
     { "getDocument",
       (PyCFunction) Connection_getDocument, METH_VARARGS,
       "getDocument(printer_uri, job_id, document_number) -> dict\n\n"
@@ -5027,7 +5027,7 @@ PyMethodDef Connection_methods[] =
       " 'document-name' key, in which case this is for the document name.\n"
       "@raise RuntimeError: Not supported in libcups until 1.4\n"
       "@raise IPPError: IPP problem" },
-    
+
     { "getDevices",
       (PyCFunction) Connection_getDevices, METH_VARARGS | METH_KEYWORDS,
       "getDevices(limit=0, exclude_schemes=None, include_schemes=None) -> dict\n\n"
@@ -5039,7 +5039,7 @@ PyMethodDef Connection_methods[] =
       "@param include_schemes: URI schemes to include\n"
       "@return: a dict, indexed by device URI, of dicts representing\n"
       "devices, indexed by attribute.\n"
-      "@raise IPPError: IPP problem" },    
+      "@raise IPPError: IPP problem" },
 
     { "getJobs",
       (PyCFunction) Connection_getJobs, METH_VARARGS | METH_KEYWORDS,
@@ -5127,7 +5127,7 @@ PyMethodDef Connection_methods[] =
       "@param job_hold_until: when to print the job; examples: 'hold', \n"
       "'immediate', 'restart', resume'\n"
       "@raise IPPError: IPP problem"},
-    
+
     { "restartJob",
       (PyCFunction) Connection_restartJob, METH_VARARGS | METH_KEYWORDS,
       "restartJob(job_id, job_hold_until=None) -> None\n\n"
@@ -5726,7 +5726,7 @@ Dest_new (PyTypeObject *type, PyObject *args, PyObject *kwds)
 
 static int
 Dest_init (Dest *self, PyObject *args, PyObject *kwds)
-{    
+{
   self->num_options = 0;
   return 0;
 }
@@ -5756,10 +5756,10 @@ Dest_repr (Dest *self)
 {
   char buffer[256];
   snprintf (buffer, 256, "<cups.Dest %s%s%s%s>",
-			  self->destname,
-			  self->instance ? "/" : "",
-			  self->instance ? self->instance : "",
-			  self->is_default ? " (default)" : "");
+        self->destname,
+        self->instance ? "/" : "",
+        self->instance ? self->instance : "",
+        self->is_default ? " (default)" : "");
 #if PY_MAJOR_VERSION >= 3
   return PyUnicode_FromString (buffer);
 #else
@@ -5819,7 +5819,7 @@ PyGetSetDef Dest_getseters[] =
     { "is_default",
       (getter) Dest_getIsDefault, (setter) NULL,
       "is_default", NULL },
-  
+
     { "options",
       (getter) Dest_getOptions, (setter) NULL,
       "options", NULL },
