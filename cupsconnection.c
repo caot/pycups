@@ -1588,14 +1588,21 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
             &requested_attrs))
     return NULL;
 
-  debugprintf ("-> Connection_getJobs(%s,%d)\n",
-         which ? which : "(null)", my_jobs);
+  if (requested_attrs) {
+    if (get_requested_attrs (requested_attrs, &n_attrs, &attrs) == -1) {
+      // ippDelete (request);
+      return NULL;
+    }
+  }
+
+  debugprintf ("-> Connection_getJobs(%s,%d)\n", which ? which : "(null)", my_jobs);
   request = ippNewRequest(IPP_GET_JOBS);
-  ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "printer-uri",
-    NULL, "ipp://localhost/printers/");
 
   ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD, "which-jobs",
     NULL, which ? which : "not-completed");
+
+  ippAddString (request, IPP_TAG_OPERATION, IPP_TAG_URI, "printer-uri",
+    NULL, "ipp://localhost/printers/");
 
   ippAddBoolean (request, IPP_TAG_OPERATION, "my-jobs", my_jobs);
   if (my_jobs)
@@ -1611,21 +1618,20 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
        "first-job-id", first_job_id);
 
   if (requested_attrs) {
-    if (get_requested_attrs (requested_attrs, &n_attrs, &attrs) == -1) {
-      ippDelete (request);
-      return NULL;
-    }
-
     ippAddStrings (request, IPP_TAG_OPERATION, IPP_TAG_KEYWORD,
        "requested-attributes", n_attrs, NULL,
        (const char **) attrs);
-    free_requested_attrs (n_attrs, attrs);
+    // free_requested_attrs (n_attrs, attrs);
   }
 
   debugprintf ("cupsDoRequest(\"/\")\n");
   Connection_begin_allow_threads (self);
   answer = cupsDoRequest (self->http, request, "/");
   Connection_end_allow_threads (self);
+
+  if (requested_attrs)
+    free_requested_attrs (n_attrs, attrs);
+
   if (!answer || ippGetStatusCode (answer) > IPP_OK_CONFLICT) {
     set_ipp_error (answer ? ippGetStatusCode (answer) : cupsLastError (),
        answer ? NULL : cupsLastErrorString ());
@@ -1706,7 +1712,7 @@ Connection_getJobs (Connection *self, PyObject *args, PyObject *kwds)
             job_id = atoi(prev);
           }
         }
-  debugprintf ("Adding %s to job dict\n", ippGetName (attr));
+  // debugprintf ("Adding %s to job dict - %s\n", ippGetName (attr), val);
   PyDict_SetItemString (dict, ippGetName (attr), val);
   Py_DECREF (val);
       }
